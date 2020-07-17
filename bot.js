@@ -44,14 +44,14 @@ client.on("message", message => {
   }
 });
 
-updateStatus() {
+function updateStatus() {
   client.user.setStatus("online");
   client.user.setActivity(jsonfile.status.activity, {
     type: jsonfile.status.presence.toUpperCase()
   });
 }
 
-getPerServerSettings(guildId) {
+function getPerServerSettings(guildId) {
   var pathForGuildSettings = path.join(datadir, 'GuildSettings', guildId.replace(/[^a-zA-Z0-9]/g, '') + '.json');
   if (fs.existsSync(pathForGuildSettings)) {
     return {
