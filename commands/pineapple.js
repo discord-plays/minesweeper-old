@@ -5,6 +5,11 @@ function pineappleCommand(bot, msg, args = []) {
     .setDescription(":pineapple:"));
 }
 
+var helpText = [
+  "Summon pineapple emoji"
+];
+
 module.exports = {
-  command: pineappleCommand
+  command: pineappleCommand,
+  help: helpText
 }

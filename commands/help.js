@@ -4,6 +4,12 @@ function helpCommand(bot, msg, args = []) {
   // if there are no args then null will be the 0th item in the array
   var command = [...args, null][0];
   var embed = null;
+  if(command!=null) {
+    var commandScript = bot.findCommand(command);
+    if(commandScript.hasOwnProperty("help")) {
+      commandScript
+    }
+  }
   switch (command) {
     case "help":
       embed = new Discord.RichEmbed()

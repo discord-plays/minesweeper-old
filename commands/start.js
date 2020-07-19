@@ -1,14 +1,15 @@
-function startCommand(that, msg, args) {
+function startCommand(bot, msg, args) {
   if (o.length < 2) return msg.channel.send("The options must include the size");
 
   // parse first two arguments as xSize and ySize
-  [xSize, ySize] = o.splice(0, 2).map(x=>parseInt(x.trim()));
-  if(isNaN(xSize)||isNaN(ySize))return msg.channel.send("The width and height must be numbers");
+  [xSize, ySize] = o.splice(0, 2).map(x => parseInt(x.trim()));
+  if (isNaN(xSize) || isNaN(ySize)) return msg.channel.send("The width and height must be numbers");
 
   // get the guild and channel ids
-  [guildId, channelId] = [msg.guild.id, msg.channel.id];
-  
-  if (Object.keys(that.boardArray).includes(bombid)) {
+  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+  bombId = guildId + "-" + channelId;
+
+  if (Object.keys(bot.boardArray).includes(bombid)) {
     return msg.channel.send(
       "There is already a game running here. Try in another channel."
     );
@@ -36,7 +37,7 @@ function startCommand(that, msg, args) {
     throw new Error("Error: Not enough mines on the board!");
   }
 
-  that.boardArray[bombId] = new MinesweeperBoard(xSize, ySize, sMines, dMines, tMines, aMines);
+  bot.boardArray[bombId] = new MinesweeperBoard(xSize, ySize, sMines, dMines, tMines, aMines);
 
   var xRand = 0,
     yRand = 0;

@@ -15,6 +15,9 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const boardhandler = require("./game/Board.js");
 const jsonfile = require("./configs.json");
+const {
+  command
+} = require('./commands/pineapple.js');
 const datadir = path.join(__dirname, '..', 'data');
 const {
   MinesweeperBoard
@@ -40,7 +43,7 @@ client.on("ready", () => {
 client.on("message", message => {
   var config = getPerServerSettings(message.guild.id.toString());
   if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) {
-    processCommand(message);
+    processCommand(message, config);
   }
 });
 
@@ -55,6 +58,7 @@ function getPerServerSettings(guildId) {
   var pathForGuildSettings = path.join(datadir, 'GuildSettings', guildId.replace(/[^a-zA-Z0-9]/g, '') + '.json');
   if (fs.existsSync(pathForGuildSettings)) {
     return {
+      ...defaultGuildSettings,
       ...require(pathForGuildSettings)
     };
   } else {
@@ -64,29 +68,49 @@ function getPerServerSettings(guildId) {
   }
 }
 
+function setPerServerSettings(guildId, obj) {
+  var pathForGuildSettings = path.join(datadir, 'GuildSettings', guildId.replace(/[^a-zA-Z0-9]/g, '') + '.json');
+}
+
 class MinesweeperBot {
   constructor(maxBoardX, maxBoardY, jsonfile, datadir) {
     [this.maxBoardX, this.maxBoardY, this.jsonfile, this.datadir] = [maxBoardX, maxBoardY, jsonfile, datadir];
   }
 
   start() {
-    
+
   }
 
-  processCommand(receivedMessage) {
-    let fullCommand = receivedMessage.content.substr(1); // Remove the leading exclamation mark
-    let splitCommand = fullCommand.split(" "); // Split the message up in to pieces for each space
-    let primaryCommand = splitCommand[0].toLowerCase(); // The first word directly after the exclamation is the command
-    let arguments = splitCommand.slice(1); // All other words are arguments/parameters/options for the command
+  findCommand(name) {
     try {
       var pathForCommandFile = path.join(__dirname, 'commands', primaryCommand.replace(/[^a-zA-Z0-9]/g, '') + '.js');
       if (fs.existsSync(pathForCommandFile)) {
         var commandScript = require(pathForCommandFile);
-        if (commandScript.hasOwnProperty('command')) {
-          return commandScript.command(this, arguments);
-        }
+        return commandScript;
       }
       receivedMessage.channel.send("Unknown command. Use >help for help.");
+    } catch (err) {
+      console.error("Error finding command file");
+      console.error(err);
+    }
+    return null;
+  }
+
+  processCommand(receivedMessage, config) {
+    var that = this;
+    try {
+      let fullCommand = receivedMessage.content.substr(config.prefix.length); // Remove the leading exclamation mark
+      let splitCommand = fullCommand.split(" "); // Split the message up in to pieces for each space
+      let primaryCommand = splitCommand[0].toLowerCase(); // The first word directly after the exclamation is the command
+      let arguments = splitCommand.slice(1); // All other words are arguments/parameters/options for the command
+      let commandScript = that.findCommand(primaryCommand);
+      if (commandScript != null) {
+        if (commandScript.hasOwnProperty('command')) {
+          return commandScript.command(that, arguments);
+        }
+      } else {
+        receivedMessage.channel.send(`Unknown command. Use ${config.prefix}help for help.`);
+      }
     } catch (err) {
       if (err.message !== "Failed: bomb exploded") {
         if (err.message.indexOf("Error: ") == 0) {
