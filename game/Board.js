@@ -3,14 +3,14 @@ const ndarray = require("ndarray");
 
 class MinesweeperBoard {
   constructor(width, height) {
-    this.board = ndarray([],[width,height]);
+    this.board = ndarray([], [width, height]);
     this.width = width;
     this.height = height;
-    for (var i = 0; i < this.width; i++) 
-      for (var j = 0; j < this.height; j++) 
-        this.board.set(i,j, new Cell(this));
+    for (var i = 0; i < this.width; i++)
+      for (var j = 0; j < this.height; j++)
+        this.board.set(i, j, new Cell(this));
   }
-  
+
   render(callback) {
     var t = this;
     Jimp.read("minesweeper-icons.png").then(iconsimg => {
@@ -95,6 +95,4 @@ function letterVal(i) {
   return (i >= 26 ? letterVal(((i / 26) >> 0) - 1) : "") + "abcdefghijklmnopqrstuvwxyz" [i % 26 >> 0];
 }
 
-module.exports = {
-  MinesweeperBoard: MinesweeperBoard
-};
+module.exports = MinesweeperBoard;

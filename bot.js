@@ -13,15 +13,9 @@ require('dotenv').config();
 const fs = require("fs");
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const boardhandler = require("./game/Board.js");
-const jsonfile = require("./configs.json");
-const {
-  command
-} = require('./commands/pineapple.js');
+const MinesweeperBoard = require("./game/Board");
+const jsonfile = require("./config");
 const datadir = path.join(__dirname, '..', 'data');
-const {
-  MinesweeperBoard
-} = boardhandler;
 const boardArray = {}; // Guild Id, Channel Id, X, (255 is board params [xSize, ySize, sMines, dMines, tMines, aMines]) Y, [Uncovered, Flag type, Mine type, totol of surrounding mines]
 
 const maxBoardX = parseInt(process.env.MAXX);
@@ -32,11 +26,11 @@ const defaultGuildSettings = {
 }
 
 client.on("ready", () => {
-  console.log("DPMS Bot v1.0");
+  console.log(`Discord Plays Minesweeper Bot ${jsonfile.version}`);
   console.log("Initializing...");
   var bot = new MinesweeperBot();
   console.log("done");
-  console.log("Thanks to MrMelon54 and Blananas2");
+  console.log("Thanks to MrMelon54, KevinGamer790 and Blananas2");
   bot.start();
 });
 

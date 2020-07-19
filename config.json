@@ -5,5 +5,6 @@
     "presence": "playing",
     "activity": "minesweeper"
   },
-  "github": "https://github.com/MrMelon54/discordbot-plays-minesweeper"
+  "github": "https://github.com/discord-plays-minesweeper/discord-plays-minesweeper",
+  "version": "v2.0"
 }

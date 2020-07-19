@@ -3,7 +3,6 @@ const glob = require("glob");
 class Globber {
   constructor(importdir, pattern) {
     this.importdir = importdir;
-    console.log(fs.existsSync(importdir));
     this.pattern = pattern;
     this.globpath = path.join(importdir, pattern);
   }

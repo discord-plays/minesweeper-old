@@ -3,9 +3,43 @@ class LoadedTexturepack {
     this.img = img;
   }
 
+  /*
+   * Get icon at coordinates
+   * 
+   * getIcon(x : int, y: int, w=16 : int, h=16 : int, raw=false : boolean)
+   *  - Get an icon at position
+   *  - Set raw to true to use exact position otherwise use 16x16 grid
+   */
+  
   getIcon(x, y, w = 16, h = 16, raw = false) {
     return this.img.crop(raw ? x : x * 16, raw ? y : y * 16, w, h);
   }
+
+  /*
+   * Main methods
+   */
+
+  getFlag(n) {
+    var specialFlag = this.getSpecialFlag(n);
+    if (specialFlag != null) return specialFlag;
+    if (n < -10 || n > 10) return null;
+    if (n == 0) return this.getSpecialFlag("zero");
+    if (n > 0) return this.getPositiveFlag(n);
+    else return this.getNegativeFlag(Math.abs(n));
+  }
+
+  getMine(n) {
+    var specialMine = this.getSpecialMine(n);
+    if (specialMine != null) return specialMine;
+    if (n < -10 || n > 10) return null;
+    if (n == 0) return this.getSpecialFlag("zero");
+    if (n > 0) return this.getPositiveMine(n);
+    else return this.getNegativeMine(Math.abs(n));
+  }
+
+  /*
+   * Extra methods for flags
+   */
 
   getPositiveFlag(n) {
     if (n < 1 || n > 10) return null;
@@ -15,14 +49,6 @@ class LoadedTexturepack {
   getNegativeFlag(n) {
     if (n < 1 || n > 10) return null;
     return this.getIcon(n + 1, 1);
-  }
-
-  getFlag(n) {
-    if (["magnet", "zero", "color", "number"].includes(n)) return this.getSpecialFlag(n);
-    if (n < -10 || n > 10) return null;
-    if (n == 0) return this.getSpecialFlag("zero");
-    if (n > 0) return this.getPositiveFlag(n);
-    else return this.getNegativeFlag(Math.abs(n));
   }
 
   getSpecialFlag(name) {
@@ -35,9 +61,19 @@ class LoadedTexturepack {
         return this.getIcon(12, 0);
       case "magnet":
         return this.getIcon(12, 1);
+      case "fraction":
+        return this.getIcon(15, 1);
+      case "decimal":
+        return this.getIcon(15, 2);
+      case "multiply":
+        return this.getIcon(15, 3);
     }
     return null;
   }
+
+  /*
+   * Extra methods for mines
+   */
 
   getPositiveMine(n) {
     if (n < 1 || n > 10) return null;
@@ -47,14 +83,6 @@ class LoadedTexturepack {
   getNegativeMine(n) {
     if (n < 1 || n > 10) return null;
     return this.getIcon(n, 4);
-  }
-
-  getMine(n) {
-    if (["magnet", "zero", "color", "number"].includes(n)) return this.getSpecialMine(n);
-    if (n < -10 || n > 10) return null;
-    if (n == 0) return this.getSpecialFlag("zero");
-    if (n > 0) return this.getPositiveMine(n);
-    else return this.getNegativeMine(Math.abs(n));
   }
 
   getSpecialMine(name) {
@@ -67,21 +95,61 @@ class LoadedTexturepack {
         return this.getIcon(0, 4);
       case "magnet":
         return this.getIcon(12, 4);
+      case "fraction":
+        return this.getIcon(14, 0);
+      case "decimal":
+        return this.getIcon(14, 1);
+      case "multiply":
+        return this.getIcon(15, 0);
     }
   }
 
-  getNumber(n) {
+  /*
+   * Numbers for in the board
+   * 
+   * getSingleNumber(n : int) : Jimp image
+   */
+
+  getSingleNumber(n) {
     if (n < 0 || n > 10) return null;
     return this.getIcon(n, 2);
   }
+  getDoubleNumber(n) {
+
+  }
+  getSingleDecimal(n) {
+    
+  }
+  getSingleFraction(n) {
+
+  }
+  getDoubleDecimal(n) {
+
+  }
+  getDoubleFraction(n) {
+    
+  }
+  /*
+   * Debug cells
+   * 
+   * getDebug() : Jimp image
+   * getDebug2() : Jimp image
+   */
 
   getDebug() {
-    return this.getIcon(11, 5);
+    return this.getIcon(11, 5); // Pink and black checker
   }
 
   getDebug2() {
-    return this.getIcon(12, 5);
+    return this.getIcon(12, 5); // Debug tile
   }
+
+  /*
+   * Raised and lowered cells
+   * 
+   * raisedCell() : Jimp image
+   * loweredCell() : Jimp image
+   */
 
   raisedCell() {
     return this.getIcon(1, 0);
@@ -91,23 +159,66 @@ class LoadedTexturepack {
     return this.getIcon(0, 0);
   }
 
+  /*
+   * Extra cells
+   * 
+   * raisedExtra(n : int) : Jimp image
+   *  - Get raised extra texture
+   * 
+   * loweredExtra(n : int) : Jimp image
+   *  - Get lowered extra texture
+   */
+
   raisedExtra(n) {
     switch (n) {
       case 1:
-        return this.getIcon(13, 5);
+        return this.getIcon(13, 5); // Melon unclicked
       case 2:
-        return this.getIcon(13, 0);
+        return this.getIcon(13, 0); // Banana unclicked
+      case 3:
+        return this.getIcon(14, 4); // Question unclicked
+      case 4:
+        return this.getIcon(14, 5); // Exclamation unclicked
     }
   }
 
   loweredExtra(n) {
     switch (n) {
       case 1:
-        return this.getIcon(13, 6);
+        return this.getIcon(13, 6); // Melon clicked
       case 2:
-        return this.getIcon(12, 6);
+        return this.getIcon(12, 6); // Banana clicked
+      case 3:
+        return this.getIcon(14, 4); // Question clicked
+      case 4:
+        return this.getIcon(14, 5); // Exclamation clicked
     }
   }
+
+  /*
+   * Boardered letters and numbers
+   *
+   * getBorderLetter(n : string) : Jimp image
+   *  - Get border letter from texture file
+   *
+   * getBorderNumber(n : int) : Jimp image
+   *  - Get border number from texture file
+   *
+   * getMiniBorderLetter(n : string) : Jimp image
+   *  - Get mini border letter for adding to the double base
+   *
+   * getMiniBorderNumber(n : int) : Jimp image
+   *  - Get mini border number for adding to the double base
+   *
+   * getBorderDoubleLetter(a : int, b : int) : Jimp image
+   *  - Get the double base and add the two letters
+   *
+   * getBorderDoubleNumber(a : string, b : string) : Jimp image
+   *  - Get the double base and add the two numbers
+   *
+   * getBorder(n : string) : Jimp image
+   *  - Get a border cell using one or two characters
+   */
 
   getBorderLetter(n) {
     n = n.toLowerCase();
@@ -144,19 +255,6 @@ class LoadedTexturepack {
     return this.getIcon(n + topleft[0], topleft[1] + size[1] * 2, ...size, true);
   }
 
-  getBorderDoubleNumber(a, b) {
-    var doublebase = this.getIcon(4, 7);
-    var num1 = this.getMiniBorderNumber(a);
-    var num2 = this.getMiniBorderNumber(b);
-    if (num1 == null || num2 == null) {
-      console.error(`Error getting number ${a} or ${b}`);
-      return null;
-    }
-    doublebase.composite(num1, 2, 3);
-    doublebase.composite(num2, 9, 3);
-    return doublebase;
-  }
-
   getBorderDoubleLetter(a, b) {
     var doublebase = this.getIcon(4, 7);
     var let1 = this.getMiniBorderLetter(a);
@@ -167,6 +265,19 @@ class LoadedTexturepack {
     }
     doublebase.composite(let1, 2, 3);
     doublebase.composite(let2, 9, 3);
+    return doublebase;
+  }
+
+  getBorderDoubleNumber(a, b) {
+    var doublebase = this.getIcon(4, 7);
+    var num1 = this.getMiniBorderNumber(a);
+    var num2 = this.getMiniBorderNumber(b);
+    if (num1 == null || num2 == null) {
+      console.error(`Error getting number ${a} or ${b}`);
+      return null;
+    }
+    doublebase.composite(num1, 2, 3);
+    doublebase.composite(num2, 9, 3);
     return doublebase;
   }
 
