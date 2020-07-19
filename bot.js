@@ -15,6 +15,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const MinesweeperBoard = require("./game/Board");
 const jsonfile = require("./config");
+const Assets = require('./game/Assets');
 const datadir = path.join(__dirname, '..', 'data');
 const boardArray = {}; // Guild Id, Channel Id, X, (255 is board params [xSize, ySize, sMines, dMines, tMines, aMines]) Y, [Uncovered, Flag type, Mine type, totol of surrounding mines]
 
@@ -69,6 +70,11 @@ function setPerServerSettings(guildId, obj) {
 class MinesweeperBot {
   constructor(maxBoardX, maxBoardY, jsonfile, datadir) {
     [this.maxBoardX, this.maxBoardY, this.jsonfile, this.datadir] = [maxBoardX, maxBoardY, jsonfile, datadir];
+    this.__assets = new Assets(__dirname);
+  }
+
+  getAssets() {
+    return this.__assets;
   }
 
   start() {

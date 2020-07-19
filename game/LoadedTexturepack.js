@@ -156,7 +156,7 @@ class LoadedTexturepack {
     var base = this.getIcon(13, 2);
     if (/^\d\.\d$/.exec(n) == null) return null;
     var num1 = Math.floor(n / 1);
-    var num2 = n % 1;
+    var num2 = (n % 1) * 10;
     if (num1 == null || num2 == null) {
       console.error(`Error getting number ${num1} or ${num2}`);
       return null;
@@ -165,14 +165,28 @@ class LoadedTexturepack {
     base.composite(this.getMiniNumber(num2), 12, 8);
     return base;
   }
-  
-  getSingleFraction(a, b, c) {
 
+  getSingleFraction(a, b, c) {
+    if ([a, b, c].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
+    var base = this.getIcon(11, 2);
+    base.composite(this.getMiniNumber(a), 2, 3);
+    base.composite(this.getMicroNumber(b), 11, 2);
+    base.composite(this.getMicroNumber(c), 11, 10);
+    return base;
   }
   getDoubleDecimal(n) {
-
+    if (/^\d\d\.\d$/.exec(n) == null) return null;
+    var base = this.getIcon(13, 3);
+    var num3 = (n % 1) * 10;
+    var num2 = Math.floor(n % 10);
+    var num1 = Math.floor(n / 10) % 10;
+    if ([num1, num2, num3].filter(x => x === null).length >= 1) {
+      console.error(`Error getting number ${num1}, ${num2} or ${num3}`);
+      return null;
+    }
+    base.composite(this.getMicroNumber(num1))
   }
-  getDoubleFraction(n) {
+  getDoubleFraction(a, b, c) {
 
   }
   getTripleNumber(n) {
@@ -181,7 +195,17 @@ class LoadedTexturepack {
   getTripleDecimal(n) {
 
   }
-  getTripleFraction(n) {
+  getTripleFraction(a, b, c) {
+
+  }
+  getFraction(a, b) {
+    var base = this.getIcon(0, 3);
+    if ([a, b].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
+    base.composite(this.getMiniNumber(a), 7, 2);
+    base.composite(this.getMicroNumber(b), 7, 10);
+    return base;
+  }
+  getNegative(n) {
 
   }
   /*
@@ -360,15 +384,20 @@ class LoadedTexturepack {
     var isLetter = "abcdefghijklmnopqrstuvwxyz".includes(s[0]);
     switch (s.length) {
       case 1:
-        return isLetter
-          ? this.getBorderLetter(s[0])
-          : this.getBorderNumber(n % 10);
+        return isLetter ?
+          this.getBorderLetter(s[0]) :
+          this.getBorderNumber(n % 10);
       case 2:
-        return isLetter
-          ? this.getBorderDoubleLetter(s[0], s[1])
-          : this.getBorderDoubleNumber(Math.floor(n / 10), n % 10);
+        return isLetter ?
+          this.getBorderDoubleLetter(s[0], s[1]) :
+          this.getBorderDoubleNumber(Math.floor(n / 10), n % 10);
+      default:
+        return null;
     }
-    return null;
+  }
+
+  getBorderCorner() {
+    return this.getIcon(0, 5);
   }
 }
 

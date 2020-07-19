@@ -2,17 +2,44 @@ const Jimp = require("jimp");
 const ndarray = require("ndarray");
 
 class MinesweeperBoard {
-  constructor(width, height) {
+  constructor(bot, width, height, texturepack) {
     this.board = ndarray([], [width, height]);
     this.width = width;
     this.height = height;
+    this.texturepack = texturepack;
     for (var i = 0; i < this.width; i++)
       for (var j = 0; j < this.height; j++)
         this.board.set(i, j, new Cell(this));
   }
 
-  render(callback) {
+  async render() {
     var t = this;
+    var tp = bot.getAssets().find(this.texturepack);
+    if (tp == null) return "invalid texturepack";
+    var textures = await tp.use();
+    try {
+      var board = await new Jimp(16 * (this.width + 2), 16 * (this.height + 2));
+      var borderRightEdge = (this.width + 1) * 16;
+      var borderBottomEdge = (this.height + 1) * 16;
+
+      // Border corners
+      var cornerIcon = t.getBorderCorner();
+      baseimg.composite(cornerIcon, 0, 0);
+      baseimg.composite(cornerIcon, borderRightEdge, 0);
+      baseimg.composite(cornerIcon, 0, borderBottomEdge);
+      baseimg.composite(cornerIcon, borderRightEdge, borderBottomEdge);
+
+      // Border letters
+      for (var x = 0; x < this.width; x++) {
+        var letterIcon = textures.getBorder()
+        var letterPosition = (1 + x) * 16;
+        baseimg.composite(letterIcon, letterPosition, 0);
+        baseimg.composite(letterIcon, letterPosition, borderBottomEdge);
+      }
+    } catch (err) {
+      console.error("Issue creating new image in memory");
+      console.error(err);
+    }
     Jimp.read("minesweeper-icons.png").then(iconsimg => {
       t.iconsimg = iconsimg;
       var r = new Jimp(16 * (this.width + 2), 16 * (this.height + 2), (err, baseimg) => {
