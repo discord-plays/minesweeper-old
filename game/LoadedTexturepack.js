@@ -5,12 +5,12 @@ class LoadedTexturepack {
 
   /*
    * Get icon at coordinates
-   * 
+   *
    * getIcon(x : int, y: int, w=16 : int, h=16 : int, raw=false : boolean)
    *  - Get an icon at position
    *  - Set raw to true to use exact position otherwise use 16x16 grid
    */
-  
+
   getIcon(x, y, w = 16, h = 16, raw = false) {
     return this.img.crop(raw ? x : x * 16, raw ? y : y * 16, w, h);
   }
@@ -106,7 +106,7 @@ class LoadedTexturepack {
 
   /*
    * Numbers for in the board
-   * 
+   *
    * getSingleNumber(n : int) : Jimp image
    */
 
@@ -114,24 +114,79 @@ class LoadedTexturepack {
     if (n < 0 || n > 10) return null;
     return this.getIcon(n, 2);
   }
+  getMiniNumber(n) {
+    var topLeft = [0, 159];
+    var size = [6, 10];
+    return this.getIcon(n * size[0] + topLeft[0], topLeft[1], ...size, true);
+  }
+  getMicroNumber(n) {
+    var topLeft = [60, 159];
+    var size = [3, 5];
+    var numbersTop = [1, 2, 3, 4, 5];
+    var numbersBottom = [6, 7, 8, 9, 0];
+    if (numbersTop.includes(n))
+      return this.getIcon(
+        numbersTop.indexOf(n) + topLeft[0],
+        topLeft[1],
+        ...size,
+        true
+      );
+    if (numbersBottom.includes(n))
+      return this.getIcon(
+        numbersTop.indexOf(n) + topLeft[0],
+        topLeft[1] + size[1],
+        ...size,
+        true
+      );
+  }
   getDoubleNumber(n) {
-
+    var base = this.getIcon(10, 2);
+    if (/^\d\d$/.exec(n) == null) return null;
+    var num1 = Math.floor(n / 10);
+    var num2 = n % 10;
+    if (num1 == null || num2 == null) {
+      console.error(`Error getting number ${num1} or ${num2}`);
+      return null;
+    }
+    base.composite(this.getMiniNumber(num1), 2, 3);
+    base.composite(this.getMiniNumber(num2), 9, 3);
+    return base;
   }
   getSingleDecimal(n) {
-    
+    var base = this.getIcon(13, 2);
+    if (/^\d\.\d$/.exec(n) == null) return null;
+    var num1 = Math.floor(n / 1);
+    var num2 = n % 1;
+    if (num1 == null || num2 == null) {
+      console.error(`Error getting number ${num1} or ${num2}`);
+      return null;
+    }
+    base.composite(this.getMiniNumber(num1), 2, 3);
+    base.composite(this.getMiniNumber(num2), 12, 8);
+    return base;
   }
-  getSingleFraction(n) {
+  
+  getSingleFraction(a, b, c) {
 
   }
   getDoubleDecimal(n) {
 
   }
   getDoubleFraction(n) {
-    
+
+  }
+  getTripleNumber(n) {
+
+  }
+  getTripleDecimal(n) {
+
+  }
+  getTripleFraction(n) {
+
   }
   /*
    * Debug cells
-   * 
+   *
    * getDebug() : Jimp image
    * getDebug2() : Jimp image
    */
@@ -146,7 +201,7 @@ class LoadedTexturepack {
 
   /*
    * Raised and lowered cells
-   * 
+   *
    * raisedCell() : Jimp image
    * loweredCell() : Jimp image
    */
@@ -161,10 +216,10 @@ class LoadedTexturepack {
 
   /*
    * Extra cells
-   * 
+   *
    * raisedExtra(n : int) : Jimp image
    *  - Get raised extra texture
-   * 
+   *
    * loweredExtra(n : int) : Jimp image
    *  - Get lowered extra texture
    */
@@ -225,7 +280,8 @@ class LoadedTexturepack {
     var lettermap1 = "abcdefghij";
     var lettermap2 = "klmnopqrstuv";
     var lettermap3 = "wxyz";
-    if (lettermap1.includes(n)) return this.getIcon(lettermap1.indexOf(n) + 1, 5);
+    if (lettermap1.includes(n))
+      return this.getIcon(lettermap1.indexOf(n) + 1, 5);
     if (lettermap2.includes(n)) return this.getIcon(lettermap2.indexOf(n), 6);
     if (lettermap3.includes(n)) return this.getIcon(lettermap3.indexOf(n), 7);
     return null;
@@ -243,8 +299,20 @@ class LoadedTexturepack {
     var size = [6, 10];
     var lettermap1 = "abcdefghijklm";
     var lettermap2 = "nopqrstuvwxyz";
-    if (lettermap1.includes(n)) return this.getIcon(lettermap1.indexOf(n) + topleft[0], topleft[1], ...size, true);
-    if (lettermap2.includes(n)) return this.getIcon(lettermap2.indexOf(n) + topleft[0], topleft[1] + size[1], ...size, true);
+    if (lettermap1.includes(n))
+      return this.getIcon(
+        lettermap1.indexOf(n) + topleft[0],
+        topleft[1],
+        ...size,
+        true
+      );
+    if (lettermap2.includes(n))
+      return this.getIcon(
+        lettermap2.indexOf(n) + topleft[0],
+        topleft[1] + size[1],
+        ...size,
+        true
+      );
     return null;
   }
 
@@ -252,7 +320,12 @@ class LoadedTexturepack {
     if (n < 0 || n > 9) return null;
     var topleft = [80, 112];
     var size = [6, 10];
-    return this.getIcon(n + topleft[0], topleft[1] + size[1] * 2, ...size, true);
+    return this.getIcon(
+      n * size[0] + topleft[0],
+      topleft[1] + size[1] * 2,
+      ...size,
+      true
+    );
   }
 
   getBorderDoubleLetter(a, b) {
@@ -287,9 +360,13 @@ class LoadedTexturepack {
     var isLetter = "abcdefghijklmnopqrstuvwxyz".includes(s[0]);
     switch (s.length) {
       case 1:
-        return isLetter ? this.getBorderLetter(s[0]) : this.getBorderNumber(n % 10);
+        return isLetter
+          ? this.getBorderLetter(s[0])
+          : this.getBorderNumber(n % 10);
       case 2:
-        return isLetter ? this.getBorderDoubleLetter(s[0], s[1]) : this.getBorderDoubleNumber(Math.floor(n / 10), n % 10);
+        return isLetter
+          ? this.getBorderDoubleLetter(s[0], s[1])
+          : this.getBorderDoubleNumber(Math.floor(n / 10), n % 10);
     }
     return null;
   }
