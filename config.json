@@ -1,9 +1,9 @@
 {
   "logoGame": "https://cdn.discordapp.com/attachments/666820187105919019/666844481215004692/da_bomb.png",
-  "logoQuestion": "",
+  "logoQuestion": "https://cdn.discordapp.com/attachments/482329020030255135/734870514031525970/i_wanna_die.png",
   "status": {
     "presence": "playing",
-    "activity": "minesweeper"
+    "activity": "{{x}} games of minesweeper"
   },
   "github": "https://github.com/discord-plays-minesweeper/discord-plays-minesweeper",
   "version": "v2.0"

@@ -3,7 +3,7 @@ class LoadedTexturepack {
     this.img = img;
   }
 
-  /*
+  /**
    * Get icon at coordinates
    *
    * getIcon(x : int, y: int, w=16 : int, h=16 : int, raw=false : boolean)
@@ -15,7 +15,7 @@ class LoadedTexturepack {
     return this.img.crop(raw ? x : x * 16, raw ? y : y * 16, w, h);
   }
 
-  /*
+  /**
    * Main methods
    */
 
@@ -37,7 +37,7 @@ class LoadedTexturepack {
     else return this.getNegativeMine(Math.abs(n));
   }
 
-  /*
+  /**
    * Extra methods for flags
    */
 
@@ -71,7 +71,7 @@ class LoadedTexturepack {
     return null;
   }
 
-  /*
+  /**
    * Extra methods for mines
    */
 
@@ -104,7 +104,7 @@ class LoadedTexturepack {
     }
   }
 
-  /*
+  /**
    * Numbers for in the board
    *
    * getSingleNumber(n : int) : Jimp image
@@ -135,10 +135,19 @@ class LoadedTexturepack {
         case 4:
           return this.getTripleDecimal(n);
         default: 
-          return 
+          return this.getDecimal(n);
       }
     }
-
+    switch (n.toString().length) {
+      case 1:
+        return this.getNumber(n);
+      case 2:
+        return this.getDoubleNumber(n);
+      case 3:
+        return this.getTripleNumber(n);
+      default:
+        return null; // cool and good
+    }
   } 
   getSingleNumber(n) {
     if (n < 0 || n > 10) return null;
@@ -300,7 +309,13 @@ class LoadedTexturepack {
     base.composite(this.getMiniNumber(n),8 ,3);
     return base;
   }
-  /*
+  getDecimal(n) {
+    var base = this.getIcon(15, 5);
+    if (/\./.exec(n) == null) return null;
+    base.composite(this.getMiniNumber(n * 10), 8, 3);
+    return base;
+  }
+  /**
    * Debug cells
    *
    * getDebug() : Jimp image
@@ -315,7 +330,7 @@ class LoadedTexturepack {
     return this.getIcon(12, 5); // Debug tile
   }
 
-  /*
+  /**
    * Raised and lowered cells
    *
    * raisedCell() : Jimp image
@@ -330,7 +345,7 @@ class LoadedTexturepack {
     return this.getIcon(0, 0);
   }
 
-  /*
+  /**
    * Extra cells
    *
    * raisedExtra(n : int) : Jimp image
@@ -366,7 +381,7 @@ class LoadedTexturepack {
     }
   }
 
-  /*
+  /**
    * Boardered letters and numbers
    *
    * getBorderLetter(n : string) : Jimp image

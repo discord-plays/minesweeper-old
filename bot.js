@@ -1,8 +1,9 @@
-/*
+/**
  * Discord Plays Minesweeper Bot
  */
 
-/* .env
+/**
+ * .env
  *
  * TOKEN=abcd1234
  * MAXX=50
@@ -302,18 +303,6 @@ class MinesweeperBot {
   // thanks, melon :)
   // no problemo bro xD
   displayBoard(guildId, channelId) {
-    // temporary print script
-    /*var o = [];
-    var k = Object.keys(boardArray[guildId][channelId]);
-    for (var l = 0; l < k.length; l++) {
-      if (k[l].toString() == "255") o.push("Data: " + JSON.stringify(boardArray[guildId][channelId][k[l]]));
-      else o.push(boardArray[guildId][channelId][k[l]].map(x => JSON.stringify(x)).join(" | "));
-    }
-    client.guilds
-      .get(guildId)
-      .channels.get(channelId)
-      .send(o.join("\n"));*/
-
     if (boardArray[guildId][channelId] === undefined) return;
     var g = [];
     for (var i = 0; i < boardArray[guildId][channelId][255][0]; i++) {

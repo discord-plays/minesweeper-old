@@ -4,12 +4,18 @@ function helpCommand(bot, msg, args = []) {
   // if there are no args then null will be the 0th item in the array
   var command = [...args, null][0];
   var embed = null;
-  if(command!=null) {
+  if (command != null) {
     var commandScript = bot.findCommand(command);
-    if(commandScript.hasOwnProperty("help")) {
+    if (commandScript.hasOwnProperty("help")) {
       commandScript
     }
   }
+  embed = new Discord.RichEmbed()
+    .setColor("#15d0ed")
+    .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
+    .setTitle("Help: " + command)
+    .setDescription(">help (command):\nShows help for a command.")
+    .addField("Example:", "`>help dig`");
   switch (command) {
     case "help":
       embed = new Discord.RichEmbed()
