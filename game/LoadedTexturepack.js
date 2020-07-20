@@ -220,11 +220,38 @@ class LoadedTexturepack {
     return base;
   }
   getTripleDecimal(n) {
-    //var base = this.getIcon(13, 4);
-    //if (/^\d\d\d\.\d$/.exec(n) == null) return null;
+    var base = this.getIcon(13, 4);
+    if (/^\d\d\d\.\d$/.exec(n) == null) return null;
+    var num1 = Math.floor(n / 100);
+    var num2 = Math.floor((n / 10) % 10);
+    var num3 = Math.floor(n % 10);
+    var num4 = (n * 10) % 10;
+    if ([num1, num2, num3, num4].filter(x => x === null).length >= 1) {
+      console.error(`Error getting number ${num1}, ${num2}, ${num3} or ${num4}`);
+      return null;
+    }
+    base.composite(this.getMicroNumber(num1), 2, 2);
+    base.composite(this.getMicroNumber(num2), 2, 6);
+    base.composite(this.getMicroNumber(num3), 2, 10);
+    base.composite(this.getMicroNumber(num4), 10, 11);
+    return base;
   }
   getTripleFraction(a, b, c) {
-
+    var base = this.getIcon(13, 1);
+    if (/^\d\d\d$/.exec(a) == null || [b, c].map(x => /^\d$/.exec(x)).filter(x => x === null) >= 1) return null;
+    var num1 = Math.floor((n / 100) % 10);
+    var num2 = Math.floor((n / 10) % 100);
+    var num3 = n % 10;
+    if ([num1, num2, num3].filter(x => x === null).length >= 1) {
+      console.error(`Error getting number ${num1}, ${num2} or ${num3}`);
+      return null;
+    }
+    base.composite(this.getMicroNumber(num1),2 ,2);
+    base.composite(this.getMicroNumber(num2),2 ,6);
+    base.composite(this.getMicroNumber(num3),2 ,10);
+    base.composite(this.getMicroNumber(b),5 ,8);
+    base.composite(this.getMicroNumber(c),12 ,10);
+    return base;
   }
   getFraction(a, b) {
     var base = this.getIcon(0, 3);
@@ -234,7 +261,14 @@ class LoadedTexturepack {
     return base;
   }
   getNegative(n) {
-
+    var base = this.getIcon(1,3);
+    n = Math.abs(Math.floor(n))
+    if (n === null) {
+      console.error(`Error getting number ${n}`)
+      return null;
+    }
+    base.composite(this.getMiniNumber(n),8 ,3);
+    return base;
   }
   /*
    * Debug cells
