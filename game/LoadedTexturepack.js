@@ -109,7 +109,37 @@ class LoadedTexturepack {
    *
    * getSingleNumber(n : int) : Jimp image
    */
+  getNumber(n, a=[null,null])  { // number, [numerator, denomenator]
+    if (n === null || n === undefined) return null;
+    if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction? 
+      if (/\./.exec(n.toString()) != null) return undefined; // is there a decimal in n? if yes, then return undefined as its formatted wrong
+      var d = n.toString().length;
+      switch(d) {
+        case 1:
+          return this.getSingleFraction(n, a[0], a[1]);
+        case 2:
+          return this.getDoubleFraction(n, a[0], a[1]);
+        case 3:
+          return this.getTripleFraction(n, a[0], a[1]);
+        default:
+          return this.getFraction(a[0], a[1]);
+      }
+    }
+    var d = (n % 1) * 10; 
+    if (d != 0) {
+      switch(n.toString().replace('.', '').length) {
+        case 2:
+          return this.getSingleDecimal(n);
+        case 3:
+          return this.getDoubleDecimal(n);
+        case 4:
+          return this.getTripleDecimal(n);
+        default: 
+          return 
+      }
+    }
 
+  } 
   getSingleNumber(n) {
     if (n < 0 || n > 10) return null;
     return this.getIcon(n, 2);
