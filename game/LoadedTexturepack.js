@@ -12,7 +12,7 @@ class LoadedTexturepack {
    */
 
   getIcon(x, y, w = 16, h = 16, raw = false) {
-    return this.img.crop(raw ? x : x * 16, raw ? y : y * 16, w, h);
+    return this.img.clone().crop(raw ? x : x * 16, raw ? y : y * 16, w, h);
   }
 
   /**
@@ -111,7 +111,9 @@ class LoadedTexturepack {
    */
   getNumber(n, a = [null, null]) { // number, [numerator, denomenator]
     if (n === null || n === undefined) return null;
-    if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction? 
+    var isNegative = a < 0;
+    if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction?
+      if (a[0] < 0 || a[1] < 0) return undefined; // faction numerator and denomenator can't be less than zero
       if (/\./.exec(n.toString()) != null) return undefined; // is there a decimal in n? if yes, then return undefined as its formatted wrong
       var d = n.toString().length;
       switch (d) {
@@ -129,13 +131,13 @@ class LoadedTexturepack {
     if (d != 0) {
       switch (n.toString().replace('.', '').length) {
         case 2:
-          return this.getSingleDecimal(n);
+          return n.toString()[0] == "0" ? this.getDecimal(n) : this.getSingleDecimal(n);
         case 3:
           return this.getDoubleDecimal(n);
         case 4:
           return this.getTripleDecimal(n);
         default:
-          return this.getDecimal(n);
+          return null;
       }
     }
     switch (n.toString().length) {
@@ -165,43 +167,44 @@ class LoadedTexturepack {
     var numbersBottom = [6, 7, 8, 9, 0];
     if (numbersTop.includes(n))
       return this.getIcon(
-        numbersTop.indexOf(n) + topLeft[0],
+        numbersTop.indexOf(n) * size[0] + topLeft[0],
         topLeft[1],
         ...size,
         true
       );
-    if (numbersBottom.includes(n))
+    else if (numbersBottom.includes(n))
       return this.getIcon(
-        numbersTop.indexOf(n) + topLeft[0],
+        numbersBottom.indexOf(n) * size[0] + topLeft[0],
         topLeft[1] + size[1],
         ...size,
         true
       );
+    else return null;
   }
   getDoubleNumber(n) {
     var base = this.getIcon(10, 2);
-    if (/^\d\d$/.exec(n) == null) return null;
-    var num1 = Math.floor(n / 10);
-    var num2 = n % 10;
+    if (/^\d\d$/.exec(n) === null) return null;
+    var num1 = this.getMiniNumber(Math.floor(n / 10));
+    var num2 = this.getMiniNumber(n % 10);
     if (num1 == null || num2 == null) {
       console.error(`Error getting number ${num1} or ${num2}`);
       return null;
     }
-    base.composite(this.getMiniNumber(num1), 2, 3);
-    base.composite(this.getMiniNumber(num2), 9, 3);
+    base.composite(num1, 2, 3);
+    base.composite(num2, 9, 3);
     return base;
   }
   getSingleDecimal(n) {
     var base = this.getIcon(13, 2);
-    if (/^\d\.\d$/.exec(n) == null) return null;
+    if (/^\d\.\d$/.exec(n) === null) return null;
     var num1 = Math.floor(n / 1);
-    var num2 = (n % 1) * 10;
+    var num2 = parseInt(n * 10) % 10;
     if (num1 == null || num2 == null) {
       console.error(`Error getting number ${num1} or ${num2}`);
       return null;
     }
     base.composite(this.getMiniNumber(num1), 2, 3);
-    base.composite(this.getMiniNumber(num2), 12, 8);
+    base.composite(this.getMicroNumber(num2), 12, 8);
     return base;
   }
 
@@ -214,48 +217,50 @@ class LoadedTexturepack {
     return base;
   }
   getDoubleDecimal(n) {
-    if (/^\d\d\.\d$/.exec(n) == null) return null;
+    if (/^\d\d\.\d$/.exec(n) === null) return null;
     var base = this.getIcon(13, 3);
-    var num3 = (n % 1) * 10;
-    var num2 = Math.floor(n % 10);
-    var num1 = Math.floor(n / 10) % 10;
+    var num3 = this.getMicroNumber(parseInt(n * 10) % 10);
+    var num2 = this.getMicroNumber(Math.floor(n % 10));
+    var num1 = this.getMicroNumber(Math.floor(n / 10) % 10);
     if ([num1, num2, num3].filter(x => x === null).length >= 1) {
       console.error(`Error getting number ${num1}, ${num2} or ${num3}`);
       return null;
     }
-    base.composite(this.getMicroNumber(num1), 2, 5);
-    base.composite(this.getMicroNumber(num2), 6, 5);
-    base.composite(this.getMicroNumber(num3), 12, 5);
+    base.composite(num1, 2, 6);
+    base.composite(num2, 6, 6);
+    base.composite(num3, 12, 6);
     return base;
   }
   getDoubleFraction(a, b, c) {
     var base = this.getIcon(12, 2);
-    if (/^\d\d$/.exec(a) || [b, c].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
-    var num2 = a % 10
-    var num1 = a - num2
-    if ([num1, num2].filter(x => x === null).length >= 1) {
-      console.error(`Error getting number ${num1} or ${num2}`);
+    if ([/^\d\d$/.exec(a), ...([b, c].map(x => /^\d$/.exec(x)))].filter(x => x === null).length >= 1) return null;
+    var num1 = this.getMicroNumber(Math.floor(a / 10) % 10);
+    var num2 = this.getMicroNumber(a % 10);
+    var num3 = this.getMicroNumber(b % 10);
+    var num4 = this.getMicroNumber(c % 10);
+    if ([num1, num2, num3, num4].filter(x => x === null).length >= 1) {
+      console.error(`Error getting number ${num1}, ${num2}, ${num3} or ${num4}`);
       return null;
     }
-    base.composite(this.getMicroNumber(num1), 2, 6);
-    base.composite(this.getMicroNumber(num2), 6, 6);
-    base.composite(this.getMicroNumber(b), 11, 2);
-    base.composite(this.getMicroNumber(c), 11, 10);
+    base.composite(num1, 2, 6);
+    base.composite(num2, 6, 6);
+    base.composite(num3, 11, 2);
+    base.composite(num4, 11, 10);
     return base;
   }
   getTripleNumber(n) {
     var base = this.getIcon(15, 4);
-    if (/^\d\d\d$/.exec(n) == null) return null;
-    var num1 = Math.floor(n / 10) % 10;
-    var num2 = Math.floor(n / 100);
-    var num3 = n % 10;
+    if (/^\d\d\d$/.exec(n) === null) return null;
+    var num1 = this.getMicroNumber(Math.floor(n / 100));
+    var num2 = this.getMicroNumber(Math.floor(n / 10) % 10);
+    var num3 = this.getMicroNumber(n % 10);
     if ([num1, num2, num3].filter(x => x === null).length >= 1) {
       console.error(`Error getting number ${num1}, ${num2} or ${num3}`);
       return null;
     }
-    base.composite(this.getMicroNumber(num1), 3, 6);
-    base.composite(this.getMicroNumber(num2), 7, 6);
-    base.composite(this.getMicroNumber(num3), 11, 6);
+    base.composite(num1, 3, 6);
+    base.composite(num2, 7, 6);
+    base.composite(num3, 11, 6);
     return base;
   }
   getTripleDecimal(n) {
@@ -270,26 +275,28 @@ class LoadedTexturepack {
       return null;
     }
     base.composite(this.getMicroNumber(num1), 2, 2);
-    base.composite(this.getMicroNumber(num2), 2, 6);
-    base.composite(this.getMicroNumber(num3), 2, 10);
-    base.composite(this.getMicroNumber(num4), 10, 11);
+    base.composite(this.getMicroNumber(num2), 6, 2);
+    base.composite(this.getMicroNumber(num3), 10, 2);
+    base.composite(this.getMicroNumber(num4), 12, 10);
     return base;
   }
   getTripleFraction(a, b, c) {
     var base = this.getIcon(13, 1);
     if (/^\d\d\d$/.exec(a) == null || [b, c].map(x => /^\d$/.exec(x)).filter(x => x === null) >= 1) return null;
-    var num1 = Math.floor((n / 100) % 10);
-    var num2 = Math.floor((n / 10) % 100);
-    var num3 = n % 10;
-    if ([num1, num2, num3].filter(x => x === null).length >= 1) {
-      console.error(`Error getting number ${num1}, ${num2} or ${num3}`);
+    var num1 = this.getMicroNumber(Math.floor((a / 100) % 10));
+    var num2 = this.getMicroNumber(Math.floor((a / 10) % 10));
+    var num3 = this.getMicroNumber(a % 10);
+    var num4 = this.getMicroNumber(b % 10);
+    var num5 = this.getMicroNumber(c % 10);
+    if ([num1, num2, num3, num4, num5].filter(x => x === null).length >= 1) {
+      console.error(`Error getting number ${num1}, ${num2}, ${num3}, ${num4} or ${num5}`);
       return null;
     }
-    base.composite(this.getMicroNumber(num1), 2, 2);
-    base.composite(this.getMicroNumber(num2), 2, 6);
-    base.composite(this.getMicroNumber(num3), 2, 10);
-    base.composite(this.getMicroNumber(b), 5, 8);
-    base.composite(this.getMicroNumber(c), 12, 10);
+    base.composite(num1, 2, 2);
+    base.composite(num2, 6, 2);
+    base.composite(num3, 10, 2);
+    base.composite(num4, 5, 8);
+    base.composite(num5, 12, 10);
     return base;
   }
   getFraction(a, b) {

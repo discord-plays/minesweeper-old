@@ -22,6 +22,7 @@
     "dotenv": "^8.2.0",
     "glob": "^7.1.6",
     "jimp": "^0.9.3",
-    "ndarray": "^1.0.19"
+    "ndarray": "^1.0.19",
+    "replace-color": "^2.3.0"
   }
 }
