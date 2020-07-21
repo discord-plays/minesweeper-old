@@ -57,16 +57,6 @@ class MinesweeperBoard {
       return null;
     }
   }
-
-  getIcon(name) {
-    var img = this.iconsimg;
-    var i = minesweeperIconsMap.indexOf(name);
-    return img.clone().crop((i % 10) * 16, Math.floor(i / 10) * 16, 16, 16);
-  }
-  getMiniIcon(i) {
-    var img = this.iconsimg;
-    return img.clone().crop((i % 13) * 6 + 5 * 16, Math.floor(i / 13) * 10 + 7 * 16, 6, 10);
-  }
 }
 /**
  * Thx stackoverflow

@@ -32,7 +32,7 @@ class LoadedTexturepack {
     var specialMine = this.getSpecialMine(n);
     if (specialMine != null) return specialMine;
     if (n < -10 || n > 10) return null;
-    if (n == 0) return this.getSpecialFlag("zero");
+    if (n == 0) return this.getSpecialMine("zero");
     if (n > 0) return this.getPositiveMine(n);
     else return this.getNegativeMine(Math.abs(n));
   }
@@ -109,12 +109,12 @@ class LoadedTexturepack {
    *
    * getSingleNumber(n : int) : Jimp image
    */
-  getNumber(n, a=[null,null])  { // number, [numerator, denomenator]
+  getNumber(n, a = [null, null]) { // number, [numerator, denomenator]
     if (n === null || n === undefined) return null;
     if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction? 
       if (/\./.exec(n.toString()) != null) return undefined; // is there a decimal in n? if yes, then return undefined as its formatted wrong
       var d = n.toString().length;
-      switch(d) {
+      switch (d) {
         case 1:
           return this.getSingleFraction(n, a[0], a[1]);
         case 2:
@@ -125,22 +125,22 @@ class LoadedTexturepack {
           return this.getFraction(a[0], a[1]);
       }
     }
-    var d = (n % 1) * 10; 
+    var d = (n % 1) * 10;
     if (d != 0) {
-      switch(n.toString().replace('.', '').length) {
+      switch (n.toString().replace('.', '').length) {
         case 2:
           return this.getSingleDecimal(n);
         case 3:
           return this.getDoubleDecimal(n);
         case 4:
           return this.getTripleDecimal(n);
-        default: 
+        default:
           return this.getDecimal(n);
       }
     }
     switch (n.toString().length) {
       case 1:
-        return this.getNumber(n);
+        return this.getSingleNumber(n);
       case 2:
         return this.getDoubleNumber(n);
       case 3:
@@ -148,7 +148,7 @@ class LoadedTexturepack {
       default:
         return null; // cool and good
     }
-  } 
+  }
   getSingleNumber(n) {
     if (n < 0 || n > 10) return null;
     return this.getIcon(n, 2);
@@ -231,7 +231,7 @@ class LoadedTexturepack {
   getDoubleFraction(a, b, c) {
     var base = this.getIcon(12, 2);
     if (/^\d\d$/.exec(a) || [b, c].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
-    var num2 = a % 10 
+    var num2 = a % 10
     var num1 = a - num2
     if ([num1, num2].filter(x => x === null).length >= 1) {
       console.error(`Error getting number ${num1} or ${num2}`);
@@ -244,8 +244,8 @@ class LoadedTexturepack {
     return base;
   }
   getTripleNumber(n) {
-    var base = this.getIcon(15,4);
-    if (/^\d\d\d$/.exec(n) == null) return null;  
+    var base = this.getIcon(15, 4);
+    if (/^\d\d\d$/.exec(n) == null) return null;
     var num1 = Math.floor(n / 10) % 10;
     var num2 = Math.floor(n / 100);
     var num3 = n % 10;
@@ -285,11 +285,11 @@ class LoadedTexturepack {
       console.error(`Error getting number ${num1}, ${num2} or ${num3}`);
       return null;
     }
-    base.composite(this.getMicroNumber(num1),2 ,2);
-    base.composite(this.getMicroNumber(num2),2 ,6);
-    base.composite(this.getMicroNumber(num3),2 ,10);
-    base.composite(this.getMicroNumber(b),5 ,8);
-    base.composite(this.getMicroNumber(c),12 ,10);
+    base.composite(this.getMicroNumber(num1), 2, 2);
+    base.composite(this.getMicroNumber(num2), 2, 6);
+    base.composite(this.getMicroNumber(num3), 2, 10);
+    base.composite(this.getMicroNumber(b), 5, 8);
+    base.composite(this.getMicroNumber(c), 12, 10);
     return base;
   }
   getFraction(a, b) {
@@ -300,13 +300,13 @@ class LoadedTexturepack {
     return base;
   }
   getNegative(n) {
-    var base = this.getIcon(1,3);
+    var base = this.getIcon(1, 3);
     n = Math.abs(Math.floor(n))
     if (n === null) {
       console.error(`Error getting number ${n}`)
       return null;
     }
-    base.composite(this.getMiniNumber(n),8 ,3);
+    base.composite(this.getMiniNumber(n), 8, 3);
     return base;
   }
   getDecimal(n) {
