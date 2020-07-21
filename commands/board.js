@@ -16,3 +16,7 @@ function boardCommand(bot, msg, args = []) {
 
   displayBoard(guildId, channelId);
 }
+
+module.exports = {
+  command: boardCommand
+};

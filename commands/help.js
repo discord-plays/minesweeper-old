@@ -4,19 +4,24 @@ function helpCommand(bot, msg, args = []) {
   // if there are no args then null will be the 0th item in the array
   var command = [...args, null][0];
   var embed = null;
+  var arr = null;
+  var exArr = [];
   if (command != null) {
     var commandScript = bot.findCommand(command);
     if (commandScript.hasOwnProperty("help")) {
-      commandScript
+      arr = commandScript.help;
+      if (commandScript.hasOwnProperty("example")) {
+        exArr = commandScript.example;
+      }
     }
   }
   embed = new Discord.RichEmbed()
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-    .setTitle("Help: " + command)
-    .setDescription(">help (command):\nShows help for a command.")
-    .addField("Example:", "`>help dig`");
-  switch (command) {
+    .setTitle(arr == null ? "General help" : "Help: " + command)
+    .setDescription(arr == null ? "`>help start` to learn how to start a game" : arr.join('\n'))
+    .addField(`Example${exArr.length==1?"":"s"}`, exArr.join('\n'));
+  /*switch (command) {
     case "help":
       embed = new Discord.RichEmbed()
         .setColor("#15d0ed")
@@ -87,10 +92,19 @@ function helpCommand(bot, msg, args = []) {
         "`>board` - Displays the current state of the game"
       );
     break;
-  }
+  }*/
   msg.channel.send(embed);
 }
 
+var helpExample = [
+  "`>help`",
+  "`>help <command>`"
+];
+var helpText = [
+  "Maybe this command opens the help text?"
+];
+
 module.exports = {
-  command: helpCommand
+  command: helpCommand,
+  help: helpText
 }
