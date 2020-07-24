@@ -11,6 +11,7 @@ class LoadedTexturepack {
    *  - Set raw to true to use exact position otherwise use 16x16 grid
    */
 
+  
   getIcon(x, y, w = 16, h = 16, raw = false) {
     return this.img.clone().crop(raw ? x : x * 16, raw ? y : y * 16, w, h);
   }
@@ -18,7 +19,19 @@ class LoadedTexturepack {
   /**
    * Main methods
    */
-
+  
+  getColor(x) {
+    var index = 0;
+    if (Math.sign(x) === 1) {
+      return this.indexIntoPalette(x - 1);
+    } else {
+      return this.indexIntoPalette(255 - (Math.abs(x) % 256));
+    }
+  }
+  indexIntoPalette(x) {
+    var TopLeft = [208, 144];
+    return getIcon(topLeft[0] + ((x % 16) - 1), topLeft[1] + Math.floor(x / 16), 1, 1, true);
+  }
   getFlag(n) {
     var specialFlag = this.getSpecialFlag(n);
     if (specialFlag != null) return specialFlag;
@@ -27,7 +40,6 @@ class LoadedTexturepack {
     if (n > 0) return this.getPositiveFlag(n);
     else return this.getNegativeFlag(Math.abs(n));
   }
-
   getMine(n) {
     var specialMine = this.getSpecialMine(n);
     if (specialMine != null) return specialMine;
