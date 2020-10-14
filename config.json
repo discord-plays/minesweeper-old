@@ -5,6 +5,6 @@
     "presence": "playing",
     "activity": "{{x}} games of minesweeper"
   },
-  "github": "https://github.com/discord-plays-minesweeper/discord-plays-minesweeper",
+  "github": "https://github.com/discord-plays-minesweeper/bot",
   "version": "v2.0"
 }
