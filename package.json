@@ -1,6 +1,6 @@
 {
-  "name": "plays-minesweeper",
-  "version": "1.0.0",
+  "name": "discord-plays-minesweeper",
+  "version": "2.0.0",
   "description": "",
   "main": "bot.js",
   "scripts": {
@@ -8,20 +8,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mrmelon54/discord-plays-minesweeper.git"
+    "url": "git+https://github.com/discord-plays-minesweeper/bot.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mrmelon54/discord-plays-minesweeper/issues"
+    "url": "https://github.com/discord-plays-minesweeper/bot/issues"
   },
-  "homepage": "https://github.com/mrmelon54/discord-plays-minesweeper#readme",
+  "homepage": "https://github.com/discord-plays-minesweeper/bot#readme",
   "dependencies": {
     "aggregation": "^1.2.6",
-    "discord.js": "^11.5.1",
+    "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
     "glob": "^7.1.6",
-    "jimp": "^0.9.3",
+    "jimp": "^0.9.8",
     "jpeg-js": "^0.4.1",
     "ndarray": "^1.0.19",
     "replace-color": "^2.3.0"
