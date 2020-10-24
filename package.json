@@ -24,6 +24,7 @@
     "jimp": "^0.9.8",
     "jpeg-js": "^0.4.1",
     "ndarray": "^1.0.19",
+    "random-seed": "^0.3.0",
     "replace-color": "^2.3.0"
   }
 }

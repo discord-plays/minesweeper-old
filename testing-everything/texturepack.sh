@@ -14,6 +14,7 @@ if [ $# = 1 ] || [ $# = 2 ]; then
       num="$2"
     fi
     tiv "$tex" -w "$num" -h "$num"
+    rm "$tex"
   else
     echo "Missing output image"
   fi

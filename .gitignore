@@ -1,2 +1,6 @@
+# Ignore node modules folder and .env secrets file
 node_modules/
 .env
+
+# Test files/folders
+.data-test/

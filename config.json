@@ -3,7 +3,7 @@
   "logoQuestion": "https://cdn.discordapp.com/attachments/482329020030255135/734870514031525970/i_wanna_die.png",
   "status": {
     "presence": "playing",
-    "activity": "{{x}} games of minesweeper"
+    "activity": "{{total-games}} {{label-games}} of minesweeper"
   },
   "github": "https://github.com/discord-plays-minesweeper/bot",
   "version": "v2.0"
