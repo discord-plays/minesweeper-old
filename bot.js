@@ -52,10 +52,8 @@ var bot = null;
 
 client.on("ready", () => {
   console.log(`Discord Plays Minesweeper Bot ${jsonfile.version}`);
-  console.log("Initializing...");
+  console.log(`Do \`>credits\` to see the people who made this crazy bot`);
   bot = new MinesweeperBot(client, options);
-  console.log("done");
-  console.log("Thanks to ");
   bot.start();
 });
 
