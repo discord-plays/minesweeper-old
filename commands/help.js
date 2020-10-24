@@ -1,6 +1,8 @@
 const Discord = require("discord.js");
 
 function helpCommand(bot, msg, args = []) {
+  var settings = bot.getPerServerSettings(msg.guild.id);
+
   // if there are no args then null will be the 0th item in the array
   var command = [...args, null][0];
   var embed = null;
@@ -8,92 +10,41 @@ function helpCommand(bot, msg, args = []) {
   var exArr = [];
   if (command != null) {
     var commandScript = bot.findCommand(command);
-    if (commandScript.hasOwnProperty("help")) {
-      arr = commandScript.help;
-      if (commandScript.hasOwnProperty("example")) {
-        exArr = commandScript.example;
+    if (commandScript == null) throw new Error(`Error: command \`${command}\` doesn't exist`);
+    else if (commandScript.hasOwnProperty("help")) {
+      var onlyDebug = false;
+      if (commandScript.hasOwnProperty("debugOnly") && commandScript.debugOnly) onlyDebug = true;
+      if (!onlyDebug || bot.DEBUG) {
+        arr = commandScript.help;
+        if (commandScript.hasOwnProperty("example")) {
+          exArr = commandScript.example.map(x => x.replace(/^`>/, `\`${settings.prefix}`));
+        }
       }
     }
   }
-  embed = new Discord.RichEmbed()
+  embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
     .setTitle(arr == null ? "General help" : "Help: " + command)
-    .setDescription(arr == null ? "`>help start` to learn how to start a game" : arr.join('\n'))
-    .addField(`Example${exArr.length==1?"":"s"}`, exArr.join('\n'));
-  /*switch (command) {
-    case "help":
-      embed = new Discord.RichEmbed()
-        .setColor("#15d0ed")
-        .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-        .setTitle("Help: " + command)
-        .setDescription(">help (command):\nShows help for a command.")
-        .addField("Example:", "`>help dig`");
-      break;
-    case "dig":
-      embed = new Discord.RichEmbed()
-        .setColor("#15d0ed")
-        .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-        .setTitle("Help: " + command)
-        .setDescription(">dig [A1] {B2} {C3}:\nDigs coordinates.")
-        .addField("Example:", "`>dig A3 C5");
-      break;
-    case "flag":
-      embed = new Discord.RichEmbed()
-        .setColor("#15d0ed")
-        .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-        .setTitle("Help: " + command)
-        .setDescription(">flag [A1] {B2} {S|D|T|A} {C3} {D4} {S|D|T|A} {E5}:\nFlags coordinates with flags. (Default type is Single)")
-        .addField("Example:", "`>flag D4 B6 T R4 E9 D8 A B7 C3`");
-      break;
-    case "start":
-      embed = new Discord.RichEmbed()
-        .setColor("#15d0ed")
-        .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-        .setTitle("Help: " + command)
-        .setDescription(">start [width] [height] [single mines] (double mines) (triple mines) (anti-mines):\nCreates a game with the specified parameters.")
-        .addField("Example:", "`>start 8 8 10 5`");
-      break;
-    case "board":
-      embed = new Discord.RichEmbed()
-        .setColor("#15d0ed")
-        .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-        .setTitle("Help: " + command)
-        .setDescription(">board:\nShows the current game's state.")
-        .addField("Example:", "`>board`");
-      break;
-  }
-  if (embed == null) {
-    embed = new Discord.RichEmbed()
-      .setColor("#15d0ed")
-      .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-      .setTitle("Help")
-      .setDescription(
-        `Github: ${bot.jsonfile.github}`
-      )
-      .addField(
-        "Help",
-        "`>help [command]` - Shows Help"
-      )
-      .addField(
-        "Start",
-        "`>start [width] [height] [single mines] {double mines} {triple mines} {anti-mines}` - Starts a game with those parameters"
-      )
-      .addField(
-        "Dig",
-        "`>dig [A1] {B2} {AA5}...` - Dig those positions in an ongoing game"
-      )
-      .addField(
-        "Flag",
-        "`>flag [A1] {B2} {type} {C3} {D4} {type} {E5}` - Flags multiple positions with different flag types (last ones will default to single)"
-      )
-      .addField(
-        "Board",
-        "`>board` - Displays the current state of the game"
-      );
-    break;
-  }*/
+    .setDescription(arr == null ? generateGeneralHelpText(bot, msg).join("\n") : arr.join('\n'));
+  if (exArr.length != 0) embed.addField(`Example${exArr.length==1?"":"s"}`, exArr.join('\n'));
   msg.channel.send(embed);
+}
+
+function generateGeneralHelpText(bot, msg) {
+  var settings = bot.getPerServerSettings(msg.guild == null ? "dm" : msg.guild.id);
+  var commandNames = bot.__commandslist.commands.map(x => bot.__commandslist.getCommandName(x));
+  var commandDetails = [];
+  for (var i = 0; i < commandNames.length; i++) {
+    var comm = bot.findCommand(commandNames[i]);
+    if (!comm.hasOwnProperty("help")) continue;
+    var onlyDebug = false;
+    if (comm.hasOwnProperty("debugOnly"))
+      if (comm.debugOnly) onlyDebug = true;
+    if (!bot.DEBUG && onlyDebug) continue;
+    commandDetails.push(`\`${settings.prefix}help ${commandNames[i]}\` -${onlyDebug?" (DEBUG)":""} ${bot.findCommand(commandNames[i]).help}`);
+  }
+  return commandDetails;
 }
 
 var helpExample = [
@@ -106,5 +57,6 @@ var helpText = [
 
 module.exports = {
   command: helpCommand,
-  help: helpText
+  help: helpText,
+  example: helpExample
 }

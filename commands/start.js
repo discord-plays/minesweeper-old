@@ -1,109 +1,67 @@
+const Board = require('../game/Board');
+const LZString = require('../game/LZString');
+
+function decompile_code(code) {
+  var raw = LZString.decompressFromEncodedURIComponent(code);
+  var data = {};
+  try {
+    data = JSON.parse(raw);
+  } catch (err) {
+    throw new Error("Error: invalid generator code");
+  }
+  var json = {
+    m: {},
+    ...data
+  };
+  return json;
+}
+
 function startCommand(bot, msg, args) {
-  if (o.length < 2) return msg.channel.send("The options must include the size");
+  if (args.length != 1) throw new Error("Error: The options code is missing!");
+
+  var code = args[0];
+  code = code.replace(/^.start /, '');
+  var json = decompile_code(code);
 
   // parse first two arguments as xSize and ySize
-  [xSize, ySize] = o.splice(0, 2).map(x => parseInt(x.trim()));
-  if (isNaN(xSize) || isNaN(ySize)) return msg.channel.send("The width and height must be numbers");
+  [xSize, ySize] = [json.b.width, json.b.height].map(x => parseInt(x.toString().trim()));
+  if (isNaN(xSize) || isNaN(ySize)) throw new Error("Error: Board width and height must be integers!");
 
   // get the guild and channel ids
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  bombId = guildId + "-" + channelId;
+  boardId = guildId + "-" + channelId;
 
-  if (Object.keys(bot.boardArray).includes(bombid)) {
-    return msg.channel.send(
-      "There is already a game running here. Try in another channel."
-    );
-  }
+  if (bot.isBoard(boardId)) throw new Error("Error: There is already a board running in this channel!");
 
   if (xSize <= 0 || ySize <= 0) {
     throw new Error("Error: Board too small!");
   }
-  if (xSize > maxBoardX || ySize > maxBoardY) {
+  if (xSize > bot.maxBoardX || ySize > bot.maxBoardY) {
     throw new Error("Error: Board too big!");
   }
 
-  var sCount = 0,
-    dCount = 0,
-    tCount = 0,
-    aCount = 0,
-    randMine = 0;
-  var totalMines = sMines + dMines + tMines + aMines;
-
-  if (xSize * ySize <= totalMines) {
-    throw new Error("Error: Too many mines for the board!");
+  var k = Object.keys(json.m);
+  for (var i = 0; i < k.length; i++) {
+    if (isNaN(json.m[k[i]])) throw new Error("Error: Invalid mine count!");
+    json.m[k[i]] = parseInt(json.m[k[i]].toString().trim());
   }
 
-  if (totalMines < 1) {
-    throw new Error("Error: Not enough mines on the board!");
-  }
-
-  bot.boardArray[bombId] = new MinesweeperBoard(xSize, ySize, sMines, dMines, tMines, aMines);
-
-  var xRand = 0,
-    yRand = 0;
-  var regenMine = true;
-
-
-  // Yo melon code from here
-
-  for (i = 0; i < xSize; i++) {
-    boardArray[guildId][channelId][i] = [];
-    for (j = 0; j < ySize; j++) {
-      boardArray[guildId][channelId][i][j] = [0, 0, 0, 255];
-    }
-  }
-
-  var previousMineCoords = [];
-  for (var i = 0; i < totalMines; i++) {
-    xRand = Math.floor(Math.random() * xSize);
-    yRand = Math.floor(Math.random() * ySize);
-    while (
-      previousMineCoords.filter(x => x[0] == xRand && x[1] == yRand).length >= 1
-    ) {
-      xRand = Math.floor(Math.random() * xSize);
-      yRand = Math.floor(Math.random() * ySize);
-    }
-    regenMine = true;
-    while (regenMine == true) {
-      randMine = randomMine();
-      if (randMine == 1) {
-        if (sCount == sMines) {
-          regenMine = true;
-        } else {
-          sCount++;
-          regenMine = false;
-        }
-      } else if (randMine == 2) {
-        if (dCount == dMines) {
-          regenMine = true;
-        } else {
-          dCount++;
-          regenMine = false;
-        }
-      } else if (randMine == 3) {
-        if (tCount == tMines) {
-          regenMine = true;
-        } else {
-          tCount++;
-          regenMine = false;
-        }
-      } else if (randMine == 4) {
-        if (aCount == aMines) {
-          regenMine = true;
-        } else {
-          aCount++;
-          regenMine = false;
-          randMine = -1;
-        }
-      } else {
-        throw new Error("Error: Invalid Value for randMine");
-      }
-    }
-    boardArray[guildId][channelId][xRand][yRand][2] = randMine;
-    previousMineCoords.push([xRand, yRand]);
-  }
-
-  fillNumbers(guildId, channelId);
-
-  displayBoard(guildId, channelId, (exploded = false), (won = false));
+  var board = bot.createBoard(boardId, guildId, channelId, xSize, ySize, "default");
+  board.generate(json.m);
+  board.fillNumbers();
+  board.displayBoard();
 }
+
+var helpExample = [
+  "`>start <width> <height> <options code>`"
+];
+
+var helpText = [
+  "Start a new board in the current channel"
+];
+
+module.exports = {
+  command: startCommand,
+  help: helpText,
+  example: helpExample
+};

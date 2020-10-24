@@ -1,22 +1,26 @@
 function boardCommand(bot, msg, args = []) {
   if (args.length > 0) {
-    return msg.channel.send("Invalid options. Use >help for help.");
+    return bot.sendInvalidOptions("board", msg);
   }
-  [guildId, channelId] = [msg.guild.id, msg.channel.id];
-  if (!Object.keys(boardArray).includes(guildId)) {
-    return msg.channel.send(
-      "No game running here. Learn how to start one in >help"
-    );
-  }
-  if (!Object.keys(boardArray[guildId]).includes(channelId)) {
-    return msg.channel.send(
-      "No game running here. Learn how to start one in >help"
-    );
-  }
+  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+  var boardId = guildId + "-" + channelId;
 
-  displayBoard(guildId, channelId);
+  if (bot.isBoard(boardId)) {
+    bot.getBoard(boardId).displayBoard();
+  } else {
+    return bot.sendMissingGame(msg);
+  }
 }
 
+var helpExample = [
+  "`>board`"
+];
+var helpText = [
+  "Shows the current board state in this channel"
+];
+
 module.exports = {
-  command: boardCommand
+  command: boardCommand,
+  help: helpText,
+  example: helpExample
 };
