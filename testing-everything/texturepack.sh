@@ -19,6 +19,6 @@ if [ $# = 1 ] || [ $# = 2 ]; then
     echo "Missing output image"
   fi
 else
-  echo "./texturepack.sh <Use a method from loaded texturepack>"
-  echo "e.g.: ./texturepack.sh 'getDebugPinkBlack()'"
+  echo "./texturepack.sh <Use a method from loaded texturepack> [image size]"
+  echo "e.g.: ./texturepack.sh 'getDebugPinkBlack()' 16"
 fi
