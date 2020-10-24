@@ -1,4 +1,5 @@
 const glob = require("glob");
+const path = require("path");
 
 class Globber {
   constructor(importdir, pattern) {

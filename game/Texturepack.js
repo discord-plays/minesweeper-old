@@ -1,4 +1,4 @@
-const Jimp = require("Jimp");
+const Jimp = require("jimp");
 const LoadedTexturepack = require('./LoadedTexturepack')
 
 class Texturepack {
