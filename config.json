@@ -1,6 +1,6 @@
 {
-  "logoGame": "https://cdn.discordapp.com/attachments/666820187105919019/666844481215004692/da_bomb.png",
-  "logoQuestion": "https://cdn.discordapp.com/attachments/482329020030255135/734870514031525970/i_wanna_die.png",
+  "logoGame": "logo.png",
+  "logoQuestion": "question_mark.png",
   "status": {
     "presence": "playing",
     "activity": "{{total-games}} {{label-games}} of minesweeper"

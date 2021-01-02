@@ -5,13 +5,20 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const MinesweeperBot = require("./game/Minesweeper")
 
-const jsonfile = require("./config.json");
+const loadingconfig = require("./config.json");
 const DEBUG = process.env.DEBUG;
 const basedir = __dirname;
 const datadir = path.join(...(DEBUG == "yes" ? [__dirname, ".data-test"] : [__dirname, '..', 'data']));
 const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
 const creditsPath = path.join(basedir, 'credits.txt');
+
+const logospath = path.join(__dirname, 'logos');
+const jsonfile = {
+  ...loadingconfig,
+  logoGame: path.join(logospath, loadingconfig.logoGame),
+  logoQuestion: path.join(logospath, loadingconfig.logoQuestion)
+};
 
 var config_maxboardx;
 var config_maxboardy;
