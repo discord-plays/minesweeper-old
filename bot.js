@@ -13,11 +13,10 @@ const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
 const creditsPath = path.join(basedir, 'credits.txt');
 
-const logospath = path.join(__dirname, 'logos');
 const jsonfile = {
   ...loadingconfig,
-  logoGame: path.join(logospath, loadingconfig.logoGame),
-  logoQuestion: path.join(logospath, loadingconfig.logoQuestion)
+  logoGame: loadingconfig.logoGame,
+  logoQuestion: loadingconfig.logoQuestion
 };
 
 var config_maxboardx;
