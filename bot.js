@@ -6,9 +6,9 @@ const client = new Discord.Client();
 const MinesweeperBot = require("./game/Minesweeper")
 
 const loadingconfig = require("./config.json");
-const DEBUG = process.env.DEBUG;
+const DEBUG = require('./debug');
 const basedir = __dirname;
-const datadir = path.join(...(DEBUG == "yes" ? [__dirname, ".data-test"] : [__dirname, '..', 'data']));
+const datadir = path.join(__dirname, ".data");
 const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
 const creditsPath = path.join(basedir, 'credits.txt');
