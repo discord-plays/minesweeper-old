@@ -1,9 +1,10 @@
-const path = require("path")
-const fs = require("fs")
+const path = require("path");
+const fs = require("fs");
 const Discord = require("discord.js");
 const Assets = require('./Assets');
 const CommandsList = require("./CommandsList");
 const Board = require('./Board');
+const MenuController = require('../ui/Controller');
 const TotalResources = 2;
 const defaultGuildSettings = {
   prefix: '>'
@@ -12,6 +13,7 @@ const defaultGuildSettings = {
 class MinesweeperBot {
   constructor(client, options) {
     var $t = this;
+    this.menuController = new MenuController();
     this.starttime = new Date();
     this.client = client;
     this.loadedresources = 0;
