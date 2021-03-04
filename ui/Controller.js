@@ -1,4 +1,4 @@
-const {Menu} = require('./Menu');
+const Menu = require('./Menu');
 
 class Controller {
   constructor() {
@@ -20,3 +20,5 @@ class Controller {
     }
   }
 }
+
+module.exports = Controller;
