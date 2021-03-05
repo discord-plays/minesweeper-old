@@ -1,5 +1,5 @@
-const path = require("path")
-const fs = require("fs")
+const path = require("path");
+const fs = require("fs");
 const Discord = require("discord.js");
 const Assets = require('./Assets');
 const CommandsList = require("./CommandsList");

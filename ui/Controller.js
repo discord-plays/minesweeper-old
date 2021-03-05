@@ -53,7 +53,7 @@ class Controller {
       }
     }
   }
-  
+
   removeReaction(reaction, user) {
     for(let i=0;i<this.sent.length;i++) {
       if(this.sent[i].type!='reaction') continue;

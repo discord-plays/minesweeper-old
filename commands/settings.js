@@ -47,8 +47,8 @@ function settingsCommand(bot, msg, args = []) {
     author.createDM().then(dm=>{
       // TODO: Finish UI
       // UI classes aren't committed
-      dm.send('Opening DMs for server settings menu')
-    })
+      dm.send('Opening DMs for server settings menu');
+    });
   }
 }
 
@@ -62,5 +62,5 @@ var helpText = [
 module.exports = {
   command: settingsCommand,
   help: helpText,
-    example: helpExample
-  };
+  example: helpExample
+};
