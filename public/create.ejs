@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <% if(bot) { %>
+      <title>@<%= bot.tag %></title>
+    <% } else { %>
+      <title>Discord Plays Minesweeper</title>
+    <% } %>
+  </head>
+  <body>
+    <% if(bot) { %>
+      <h1>@<%= bot.tag %></h1>
+      <% if(user) { %>
+        <p>You are logged in as: @<%= user.tag %></p>
+        <% if(user.channel) { %>
+          <% if(user.channel.guild) { %>
+            <p>Guild: <%= user.channel.guild.name %> (<%= user.channel.guild.id %>)</p>
+            <p>Channel: #<%= user.channel.name %> (<%= user.channel.id %>)</p>
+          <% } else { %>
+            <p>Channel: Direct messages</p>
+          <% } %>
+          <p>To change channel run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+          <p>No options yet lol</p>
+        <% } else { %>
+          <p>Run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+        <% } %>
+      <% } %>
+    <% } else { %>
+      <h1>Discord Plays Minesweeper</h1>
+      <p>The bot has not started yet.</p>
+    <% } %>
+  </body>
+</html>

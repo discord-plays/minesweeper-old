@@ -6,6 +6,7 @@ const Cell = require('./Cell');
 class MinesweeperBoard {
   constructor(bot, boardId, guildId, channelId, width, height, texturepack) {
     this.board = ndarray([], [width, height]);
+    this.seed = "";
     this.width = width;
     this.height = height;
     this.id = boardId;

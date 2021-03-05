@@ -3,7 +3,8 @@ const path = require("path");
 const fs = require("fs");
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const MinesweeperBot = require("./game/Minesweeper")
+const MinesweeperBot = require("./game/Minesweeper");
+const myServer = require('./server');
 
 const loadingconfig = require("./config.json");
 const DEBUG = require('./debug');
@@ -59,12 +60,16 @@ var bot = null;
 client.on("ready", () => {
   console.log(`Discord Plays Minesweeper Bot ${jsonfile.version}`);
   console.log(`Do \`>credits\` to see the people who made this crazy bot`);
-  bot = new MinesweeperBot(client, options);
+  bot = new MinesweeperBot(client, myServer, options);
   bot.start();
+
+  myServer.sendMinesweeperBot(bot);
+  myServer.sendBotData({tag:client.user.tag});
 });
 
 client.on("message", message => {
   if (bot == null) return;
+  if (message.guild == null && bot.menuController.waitingForInput(message.author)) return bot.menuController.sendInput(message);
   if (message.mentions.has(client.user)) return bot.processPing(message, config);
 
   // Respond to messages for the server's prefix or the default if the server doesn't have settings or the text channel is in a DM
@@ -72,5 +77,13 @@ client.on("message", message => {
   if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) return bot.processCommand(message, config);
 });
 
+client.on("messageReactionAdd",(reaction,user)=>{
+  bot.menuController.addReaction(reaction,user);
+});
+
+client.on("messageReactionRemove",(reaction,user)=>{
+  bot.menuController.removeReaction(reaction,user);
+});
+
 // login stuffs
-client.login(process.env.TOKEN);
+client.login(process.env.DISCORD_TOKEN);

@@ -18,14 +18,20 @@
   "homepage": "https://github.com/discord-plays-minesweeper/bot#readme",
   "dependencies": {
     "aggregation": "^1.2.6",
+    "body": "^5.1.0",
+    "cookie-parser": "^1.4.5",
+    "discord-oauth2-api": "^1.0.8",
     "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
     "glob": "^7.1.6",
     "jimp": "^0.9.8",
     "jpeg-js": "^0.4.1",
     "ndarray": "^1.0.19",
     "random-seed": "^0.3.0",
     "replace-color": "^2.3.0",
-    "set": "^1.1.1"
+    "set": "^1.1.1",
+    "uuid": "^8.3.2"
   }
 }

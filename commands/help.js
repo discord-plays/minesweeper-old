@@ -59,4 +59,4 @@ module.exports = {
   command: helpCommand,
   help: helpText,
   example: helpExample
-}
+};

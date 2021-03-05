@@ -4,17 +4,20 @@ const Discord = require("discord.js");
 const Assets = require('./Assets');
 const CommandsList = require("./CommandsList");
 const Board = require('./Board');
+const MenuController = require('../ui/Controller');
 const TotalResources = 2;
 const defaultGuildSettings = {
   prefix: '>'
 }
 
 class MinesweeperBot {
-  constructor(client, options) {
+  constructor(client, server, options) {
     var $t = this;
+    this.menuController = new MenuController();
     this.starttime = new Date();
     this.client = client;
     this.loadedresources = 0;
+    this.web = server;
 
     // guildSettingsPath, userSettingsPath, maxBoardX, maxBoardY, jsonfile, datadir, basedir
     var k = Object.keys(options);
@@ -33,6 +36,32 @@ class MinesweeperBot {
     this.__boards = {};
     this.__mines = [...$t.getDefaultMines()];
     this.__flags = [...$t.getDefaultFlags()];
+  }
+
+  startGame(channel, xSize, ySize) {
+    // get the guild and channel ids
+    [guildId, channelId] = [channel.guild == null ? "dm" : channel.guild.id, channel.id];
+    boardId = guildId + "-" + channelId;
+
+    if (bot.isBoard(boardId)) throw new Error("Error: There is already a board running in this channel!");
+
+    if (xSize <= 0 || ySize <= 0) {
+      throw new Error("Error: Board too small!");
+    }
+    if (xSize > bot.maxBoardX || ySize > bot.maxBoardY) {
+      throw new Error("Error: Board too big!");
+    }
+
+    var k = Object.keys(json.m);
+    for (var i = 0; i < k.length; i++) {
+      if (isNaN(json.m[k[i]])) throw new Error("Error: Invalid mine count!");
+      json.m[k[i]] = parseInt(json.m[k[i]].toString().trim());
+    }
+
+    var board = this.createBoard(boardId, guildId, channelId, xSize, ySize, "default");
+    board.generate(json.m);
+    board.fillNumbers();
+    board.displayBoard();
   }
 
   getDefaultMines() {
