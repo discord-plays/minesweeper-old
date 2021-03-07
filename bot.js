@@ -1,19 +1,19 @@
-require('dotenv').config();
+const DEBUG = require('./debug');
+const CREDITS = require('./credits');
+
 const path = require("path");
 const fs = require("fs");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const MinesweeperBot = require("./game/Minesweeper");
 const myServer = require('./server');
-
 const loadingconfig = require("./config.json");
-const DEBUG = require('./debug');
+
 const basedir = __dirname;
 const datadir = path.join(__dirname, ".data");
 const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
 const boardDataPath = path.join(datadir,'Boards');
-const creditsPath = path.join(basedir, 'credits.txt');
 
 const jsonfile = {
   ...loadingconfig,
@@ -37,9 +37,12 @@ try {
 }
 const maxBoardX = config_maxboardx;
 const maxBoardY = config_maxboardy;
+const DISCORD_ID = process.env.DISCORD_ID;
 
 const options = {
+  DISCORD_ID,
   DEBUG,
+  CREDITS,
   jsonfile,
   maxBoardX,
   maxBoardY,
@@ -47,8 +50,7 @@ const options = {
   datadir,
   guildSettingsPath,
   userSettingsPath,
-  boardDataPath,
-  creditsPath
+  boardDataPath
 };
 
 
@@ -56,6 +58,7 @@ const options = {
 if (!fs.existsSync(datadir)) fs.mkdirSync(datadir);
 if (!fs.existsSync(guildSettingsPath)) fs.mkdirSync(guildSettingsPath);
 if (!fs.existsSync(userSettingsPath)) fs.mkdirSync(userSettingsPath);
+if (!fs.existsSync(boardDataPath)) fs.mkdirSync(boardDataPath);
 
 var bot = null;
 
