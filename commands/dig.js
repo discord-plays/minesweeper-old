@@ -16,7 +16,7 @@ function digCommand(bot, msg, args, _a = true) {
       }
       var cell = board.get(cellPos.col, cellPos.row);
       if (cell.flag != 0) throw new Error("Error: You can't dig a flagged cell");
-      if (cell.visible) return;
+      if (cell.visible) continue;
       if (cell.mine != 0) {
         cell.visible = true;
         return board.bombExplode();
