@@ -38,29 +38,38 @@ class MinesweeperBot {
     this.__flags = [...$t.getDefaultFlags()];
   }
 
-  startGame(channel, xSize, ySize) {
+  startGame(channel, j) {
     // get the guild and channel ids
-    [guildId, channelId] = [channel.guild == null ? "dm" : channel.guild.id, channel.id];
-    boardId = guildId + "-" + channelId;
+    let guildId, channelId;
+    [guildId, channelId] = [(channel.guild==undefined||channel.guild==null) ? "dm" : channel.guild.id, channel.id];
+    let boardId = guildId + "-" + channelId;
 
-    if (bot.isBoard(boardId)) throw new Error("Error: There is already a board running in this channel!");
+    if (this.isBoard(boardId)) throw new Error("Error: There is already a board running in this channel!");
+
+    let xSize = parseInt(j.board.width);
+    let ySize = parseInt(j.board.height);
+    if(isNaN(xSize)||isNaN(ySize)) throw new Error("Error: Invalid board size!");
 
     if (xSize <= 0 || ySize <= 0) {
       throw new Error("Error: Board too small!");
     }
-    if (xSize > bot.maxBoardX || ySize > bot.maxBoardY) {
+    if (xSize > this.maxBoardX || ySize > this.maxBoardY) {
       throw new Error("Error: Board too big!");
     }
 
-    var k = Object.keys(json.m);
+    var k = Object.keys(j.mines);
     for (var i = 0; i < k.length; i++) {
-      if (isNaN(json.m[k[i]])) throw new Error("Error: Invalid mine count!");
-      json.m[k[i]] = parseInt(json.m[k[i]].toString().trim());
+      if (isNaN(j.mines[k[i]])) throw new Error("Error: Invalid mine count!");
+      j.mines[k[i]] = parseInt(j.mines[k[i]].toString().trim());
     }
 
-    var board = this.createBoard(boardId, guildId, channelId, xSize, ySize, "default");
-    board.generate(json.m);
+    // Change seed for tournament or something?
+    let seed = Math.floor(Math.random()*Math.pow(10,15));
+
+    var board = this.createBoard(boardId, guildId, channelId, xSize, ySize, seed, "default");
+    board.generate(j.mines);
     board.fillNumbers();
+    board.save();
     board.displayBoard();
   }
 
@@ -197,9 +206,9 @@ class MinesweeperBot {
     return Object.keys(this.__boards).includes(id);
   }
 
-  createBoard(id, guildId, channelId, width, height, texturepack) {
+  createBoard(id, guildId, channelId, width, height, seed, texturepack) {
     if (this.isBoard(id)) return false;
-    this.__boards[id] = new Board(this, id, guildId, channelId, width, height, texturepack);
+    this.__boards[id] = new Board(this, id, guildId, channelId, width, height, seed, texturepack);
     this.updateStatus();
     return this.__boards[id];
   }
@@ -285,11 +294,28 @@ class MinesweeperBot {
             .setTitle(err.message.slice(7, err.message.length))
           );
         } else {
-          receivedMessage.channel.send("A fault occured :sob: Please inform my developer");
+          receivedMessage.channel.send(
+            new Discord.MessageEmbed()
+            .setColor("#ba0c08")
+            .setAuthor("FUCK!!")
+            .setTitle("A fault occured :sob: Please inform my developer")
+          );
           console.error(err);
         }
       }
     }
+  }
+
+  processPing(receivedMessage, config) {
+    var embed = new Discord.MessageEmbed()
+    .setColor("#292340")
+    .setAuthor("Minesweeper!", this.jsonfile.logoQuestion)
+    .setTitle("Welcome")
+    .setDescription([
+      `Run \`${config.prefix}start\` to create a new game`,
+      `Run \`${config.prefix}help\` for more information`
+    ].join('\n'));
+    receivedMessage.channel.send(embed);
   }
 
   getPerServerSettings(guildId) {
@@ -297,7 +323,7 @@ class MinesweeperBot {
     var pathForGuildSettings = path.join(this.guildSettingsPath, guildId.toString().replace(/[^a-zA-Z0-9]/g, '') + '.json');
     if (fs.existsSync(pathForGuildSettings)) return {
       ...defaultGuildSettings,
-      ...require(pathForGuildSettings)
+      ...JSON.parse(fs.readFileSync(pathForGuildSettings))
     };
     else return {
       ...defaultGuildSettings

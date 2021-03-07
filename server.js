@@ -43,10 +43,15 @@ app.get("/", (req,res,...a)=>{
   res.render(getFile('index.ejs'),{bot:botData});
 });
 
+app.use('/styles',express.static(path.join(www,'styles')));
+app.use('/scripts',express.static(path.join(www,"scripts")));
+app.use('/images',express.static(path.join(www,"images")));
+
 app.get("/create", (req,res,...a)=>{
   if(sessions.hasOwnProperty(req.cookies.session)) {
     let mySession = sessions[req.cookies.session];
     client.getUser(mySession.code).then(user => {
+      sessions[req.cookies.session].channel = users.hasOwnProperty(user.id)?users[user.id].channel:undefined;
       res.render(getFile('create.ejs'),{
         bot:botData,
         user:{
@@ -63,9 +68,32 @@ app.get("/create", (req,res,...a)=>{
   }
 });
 
-app.post("/create", (req,res,...a)=>{
+app.post("/create", express.json(), (req,res,...a)=>{
   if(bot!=null) {
-    res.send('Posting a create message',req.body);
+    let j = req.body;
+    if(!j.hasOwnProperty("board")) return res.status(200).send(JSON.stringify({state:-1}));
+    if(!j.hasOwnProperty("mines")) return res.status(200).send(JSON.stringify({state:-1}));
+
+    if(sessions.hasOwnProperty(req.cookies.session)) {
+      let mySession = sessions[req.cookies.session];
+      if(mySession.channel!=undefined) {
+        try {
+          bot.startGame(mySession.channel,j);
+          res.status(200).send(JSON.stringify({state:1}))
+        } catch(err) {
+          if (err.message.indexOf("Error: ") == 0) {
+            res.status(200).send(JSON.stringify({state:999,message:err.message.slice(7, err.message.length)}));
+          } else {
+            res.status(500).send('Internal server error');
+            console.error(err);
+          }
+        }
+      } else {
+        res.status(200).send(JSON.stringify({state:4}))
+      }
+    }
+  } else {
+    res.status(500).send('Internal server error');
   }
 });
 
@@ -92,8 +120,8 @@ module.exports = {
   sendBotData: (data)=>{
     botData = data;
   },
-  sendMinesweeperBot: (bot)=>{
-    bot = bot;
+  sendMinesweeperBot: (botClass)=>{
+    bot = botClass;
   },
   updateUserLastChannel: (user, channel)=>{
     users[user.id] = {channel};

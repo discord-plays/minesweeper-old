@@ -624,6 +624,26 @@ class LoadedTexturepack {
     }
   }
 
+  // For red exclamation mark
+  getRedExclamationMark(n, ...a) {
+    var img = this.raisedExtra(4);
+    if (img == null) return img;
+    var paletteColor = [255,0,0,255];
+    img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (_x, _y, idx) {
+      var red = img.bitmap.data[idx];
+      var green = img.bitmap.data[idx + 1];
+      var blue = img.bitmap.data[idx + 2];
+
+      if ((red + green + blue) == 0) {
+        img.bitmap.data[idx] = paletteColor[0];
+        img.bitmap.data[idx + 1] = paletteColor[1];
+        img.bitmap.data[idx + 2] = paletteColor[2];
+        img.bitmap.data[idx + 3] = paletteColor[3];
+      }
+    });
+    return img;
+  }
+
   /**
    * Boardered letters and numbers
    *
@@ -758,7 +778,6 @@ class LoadedTexturepack {
       return this.getBorderIcon(s);
     }
     var isLetter = "abcdefghijklmnopqrstuvwxyz".includes(s[0]);
-    console.log(s);
     switch (s.length) {
       case 1:
         return isLetter ? this.getBorderLetter(s[0]) : this.getBorderNumber(n % 10);
@@ -774,8 +793,6 @@ class LoadedTexturepack {
     n--;
     var topleft = [152, 132];
     var size = [6, 10];
-    console.log(n * size[0]);
-    console.log(0);
     return this.getIcon(
       n * size[0] + topleft[0],
       topleft[1],
@@ -789,9 +806,6 @@ class LoadedTexturepack {
     n--;
     var topleft = [140, 132];
     var size = [6, 5];
-    console.log(n);
-    console.log((n % 2) * size[0]);
-    console.log(size[1] * Math.floor(n / 2));
     return this.getIcon(
       (n % 2) * size[0] + topleft[0],
       topleft[1] + size[1] * Math.floor(n / 2),

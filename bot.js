@@ -12,6 +12,7 @@ const basedir = __dirname;
 const datadir = path.join(__dirname, ".data");
 const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
+const boardDataPath = path.join(datadir,'Boards');
 const creditsPath = path.join(basedir, 'credits.txt');
 
 const jsonfile = {
@@ -46,6 +47,7 @@ const options = {
   datadir,
   guildSettingsPath,
   userSettingsPath,
+  boardDataPath,
   creditsPath
 };
 
@@ -70,10 +72,10 @@ client.on("ready", () => {
 client.on("message", message => {
   if (bot == null) return;
   if (message.guild == null && bot.menuController.waitingForInput(message.author)) return bot.menuController.sendInput(message);
-  if (message.mentions.has(client.user)) return bot.processPing(message, config);
 
   // Respond to messages for the server's prefix or the default if the server doesn't have settings or the text channel is in a DM
   var config = bot.getPerServerSettings(message.guild == null ? ("dm-" + message.author.id) : message.guild.id.toString());
+  if (message.mentions.has(client.user)) return bot.processPing(message, config);
   if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) return bot.processCommand(message, config);
 });
 

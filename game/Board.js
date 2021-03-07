@@ -2,11 +2,14 @@ const Discord = require("discord.js");
 const Jimp = require("jimp");
 const ndarray = require("ndarray");
 const Cell = require('./Cell');
+const randomgen = require('../utils/randomgen');
+const { promises : fs } = require("fs")
 
 class MinesweeperBoard {
-  constructor(bot, boardId, guildId, channelId, width, height, texturepack) {
+  constructor(bot, boardId, guildId, channelId, width, height, seed, texturepack) {
     this.board = ndarray([], [width, height]);
-    this.seed = "";
+    this.seed = seed;
+    this.r = new randomgen(seed);
     this.width = width;
     this.height = height;
     this.id = boardId;
@@ -16,6 +19,7 @@ class MinesweeperBoard {
     this.bot = bot;
     this.won = false;
     this.exploded = false;
+
     for (var i = 0; i < this.width; i++)
       for (var j = 0; j < this.height; j++)
         this.board.set(i, j, new Cell(this));
@@ -27,10 +31,48 @@ class MinesweeperBoard {
 
   async getChannel() {
     try {
-      return await this.bot.getChannel(channelId);
+      return await this.bot.getChannel(this.channelId);
     } catch (err) {
       throw new Error("Error: unable to find channel");
     }
+  }
+
+  getRawData() {
+    return {
+      board: this.board,
+      seed: {base: this.seed, live: this.r.live},
+      width: this.width,
+      height: this.height,
+      id: this.id,
+      guildId: this.guildId,
+      channelId: this.channelId,
+      texturepack: this.texturepack,
+      won: this.won,
+      exploded: this.exploded
+    }
+  }
+
+  loadRawData(d) {
+    this.board = d.board;
+    this.seed = d.seed.base;
+    this.live = d.seed.live;
+    this.width = d.width;
+    this.height = d.height;
+    this.id = d.id;
+    this.guildId = d.guildId;
+    this.channelId = d.channelId;
+    this.texturepack = d.texturepack;
+    this.won = d.won;
+    this.exploded = d.exploded;
+  }
+
+  save() {
+    let $t=this;
+    fs.writeFile(path.join(bot.boardDataPath,this.id), this.getRawData(), { encoding: 'utf8' }).then(() => {
+      /* Ignore cuz it saved fine */
+    }).catch(()=>{
+      console.error(`Failed to save board ${$t.id} lol`);
+    });
   }
 
   async render() {
@@ -93,6 +135,7 @@ class MinesweeperBoard {
       for (var j = 0; j < $t.height; j++)
         this.board.set(i, j, new Cell($t));
 
+    this.totalMineCounts = totalMineCounts;
     var mineCounts = {
       ...totalMineCounts
     };
@@ -103,16 +146,16 @@ class MinesweeperBoard {
     }
 
     // Sanity checks xD
-    if (xSize * ySize <= totalMines) throw new Error("Error: Too many mines for the board!");
+    if (this.width * this.height <= totalMines) throw new Error("Error: Too many mines for the board!");
     if (totalMines < 1) throw new Error("Error: Not enough mines on the board!");
 
     var previousMineCoords = [];
     for (var i = 0; i < totalMines; i++) {
-      xRand = Math.floor(Math.random() * xSize);
-      yRand = Math.floor(Math.random() * ySize);
+      xRand = this.r.getInt(this.width-1);
+      yRand = this.r.getInt(this.height-1);
       while (previousMineCoords.filter(x => x[0] == xRand && x[1] == yRand).length >= 1) {
-        xRand = Math.floor(Math.random() * xSize);
-        yRand = Math.floor(Math.random() * ySize);
+        xRand = this.r.getInt(this.width-1);
+        yRand = this.r.getInt(this.height-1);
       }
       regenMine = true;
       while (regenMine == true) {
@@ -339,11 +382,20 @@ class MinesweeperBoard {
       .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
       .setTitle(`Standard (${$t.width}x${$t.height})`)
       //.setDescription(">dig [A1] to dig | >flag [A1] (S,D,T,A) to flag")
+      .addField("Seed:", this.seed)
       .addField("Mines:", $t.getMineEmbedContent());
   }
 
   getMineEmbedContent() {
-    return "This is missing?";
+    let o=[];
+    let names = this.bot.getDefaultMines();
+
+    let d = Object.keys(this.totalMineCounts);
+    for(let i=0;i<d.length;i++) {
+      o.push(`${this.totalMineCounts[d[i]]} x ${names[d[i]].names[0]}`);
+    }
+
+    return o.join('\n');
   }
 
   flaggedMines() {
@@ -358,6 +410,7 @@ class MinesweeperBoard {
   }
 
   calculateCurrentCellView(textures, cell, showExploded = true) {
+    if (showExploded && cell.mined) return textures.getRedExclamationMark();
     if (!cell.visible) return textures.raisedCell();
     if (cell.flagged) return textures.getFlag(cell.flag);
     if (cell.mined) return textures.getMine(cell.mine);

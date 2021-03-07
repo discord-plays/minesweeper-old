@@ -7,6 +7,7 @@ class Controller {
   }
 
   createMenu(user) {
+    this.destroyUserMenu(user);
     let menu = new Menu(this,user);
     this.menus.push(menu);
     return menu;
@@ -14,8 +15,18 @@ class Controller {
 
   destroyMenu(menu) {
     for(let i=0;i<this.menus.length;i++) {
-      if(this.menu[i]===menu) {
-        this.menu.splice(i,1);
+      if(this.menus[i]===menu) {
+        this.menus.splice(i,1);
+        menu.destroy();
+        break;
+      }
+    }
+  }
+
+  destroyUserMenu(user) {
+    for(let i=0;i<this.menus.length;i++) {
+      if(this.menus[i].user.id===user.id) {
+        this.destroyMenu(this.menus[i]);
         break;
       }
     }
