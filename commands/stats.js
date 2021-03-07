@@ -21,7 +21,8 @@ function statsCommand(bot, msg, args = []) {
 
 
 var helpExample = [
-  "`>stats [global|server]`"
+  "`>stats global`",
+  "`>stats server`"
 ];
 
 var helpText = [

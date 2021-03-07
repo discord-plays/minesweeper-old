@@ -30,7 +30,9 @@ function digCommand(bot, msg, args, _a = true) {
 }
 
 var helpExample = [
-  "`>dig <A1> [B2] [AA5]`"
+  "`>dig <A1> [B2] [AA5]`",
+  "`>dig A1 B2 AA5`",
+  "`>dig a5`"
 ];
 var helpText = [
   "Dig a cell in the current board"

@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
 function helpCommand(bot, msg, args = []) {
-  var settings = bot.getPerServerSettings(msg.guild.id);
+  var settings = bot.getPerServerSettings(msg.guild == null ? "dm" : msg.guild.id);
 
   // if there are no args then null will be the 0th item in the array
   var command = [...args, null][0];
@@ -49,7 +49,9 @@ function generateGeneralHelpText(bot, msg) {
 
 var helpExample = [
   "`>help`",
-  "`>help <command>`"
+  "`>help <command>`",
+  "`>help start`",
+  "`>help settings`"
 ];
 var helpText = [
   "Maybe this command opens the help text?"

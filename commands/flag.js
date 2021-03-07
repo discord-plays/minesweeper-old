@@ -41,7 +41,9 @@ function flagCommand(bot, msg, args, _a = true) {
 }
 
 var helpExample = [
-  "`>flag <&flag name/number> <A1> [B2] [&flag name/number] [AA5]`"
+  "`>flag <&flag name/number> <A1> [B2] [&flag name/number] [AA5]`",
+  "`>flag &1 A5 D7`",
+  "`>flag &double B3 C2`"
 ];
 var helpText = [
   "Flag a cell in the current board"

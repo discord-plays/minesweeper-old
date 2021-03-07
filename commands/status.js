@@ -2,7 +2,8 @@ const Discord = require("discord.js");
 
 function statusCommand(bot, msg, args = []) {
   let active = bot.getRunningGames();
-  let guilds = bot.client.guilds.cache.size;
+  let guildCache = bot.client.guilds.cache;
+  let guilds = guildCache.size;
   let lines = [
     `I am in ${guilds} server${guilds==1?"":"s"}, playing ${active} game${active==1?"":"s"}.`
   ];
@@ -12,6 +13,7 @@ function statusCommand(bot, msg, args = []) {
     .setDescription(lines.join('\n'))).catch(reason => {
     console.error(reason);
   });
+  if(bot.DEBUG) console.log("Guild names:\n"+guildCache.map(x=>` - ${x.name}`).join('\n'));
 }
 
 var helpExample = [

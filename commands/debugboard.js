@@ -12,7 +12,15 @@ function debugboardCommand(bot, msg, args = []) {
         c.push(fancyPrint(j + 1, i + 1, board.get(j, i)));
       }
     }
-    msg.channel.send(c.join("\n"));
+
+    let v=c.join("\n");
+    (async function() {
+      while(v.length>0) {
+        let z=v.substr(0,2000);
+        v=v.substr(2000,v.length-1);
+        await msg.channel.send(z);
+      }
+    })();
   }
 }
 

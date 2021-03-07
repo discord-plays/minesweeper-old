@@ -1,3 +1,5 @@
+const { Permissions } = require('discord.js');
+
 function settingsCommand(bot, msg, args = []) {
   if (args.length > 0) {
     return bot.sendInvalidOptions("settings", msg);
@@ -7,8 +9,7 @@ function settingsCommand(bot, msg, args = []) {
     // User settings menu
     let author = msg.author;
     author.createDM().then(dm=>{
-      // TODO: Finish UI
-      // UI classes aren't committed
+      // Test UI as user menu isn't ready yet
       let menu = bot.menuController.createMenu(msg.author);
       menu.name = "User Settings";
       menu.color = 0x0099ff;
@@ -44,11 +45,49 @@ function settingsCommand(bot, msg, args = []) {
   } else {
     // Server settings menu
     let author = msg.author;
-    author.createDM().then(dm=>{
-      // TODO: Finish UI
-      // UI classes aren't committed
-      dm.send('Opening DMs for server settings menu');
-    });
+    let member = msg.member;
+    let guildId = msg.guild.id;
+    if(member.hasPermission(Permissions.FLAGS.MANAGE_GUILD)) {
+      author.createDM().then(dm=>{
+        let menu = bot.menuController.createMenu(author);
+        menu.name = `Server Settings (${msg.guild.name})`;
+        menu.color = 0xff9900;
+        menu.description = "Edit the settings for a server";
+
+        let s=bot.getPerServerSettings(guildId);
+
+        let prefixInput = menu.addStringInputWidget();
+        prefixInput.name = 'Prefix string (to replace `>` before commands)';
+        prefixInput.value = s.prefix;
+        prefixInput.setCallback(text=>changeSettings(bot,member,dm,guildId,"prefix",text));
+
+        menu.sendTo(dm);
+      });
+    } else {
+      author.createDM().then(dm=>{
+        dm.channel.send(
+          new Discord.MessageEmbed()
+          .setColor("#ff0000")
+          .setAuthor("Uh Oh...")
+          .setTitle('You don\'t have permission to edit these server settings')
+        );
+      })
+    }
+  }
+}
+
+function changeSettings(bot, member, dm, guildId, f, v) {
+  if(member.hasPermission(Permissions.FLAGS.MANAGE_GUILD)) {
+    let s=bot.getPerServerSettings(guildId);
+    s[f]=v.replace(/[`\\@#:]/g,'_');
+    bot.setPerServerSettings(guildId,s);
+  } else {
+    dm.channel.send(
+      new Discord.MessageEmbed()
+      .setColor("#ff0000")
+      .setAuthor("Uh Oh...")
+      .setTitle('You don\'t have permission to edit these server settings')
+    );
   }
 }
 
