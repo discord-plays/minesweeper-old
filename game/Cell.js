@@ -14,6 +14,10 @@ class Cell {
   get mined() {
     return this.mine != 0;
   }
+
+  toJSON () {
+    return [this.mine,this.flag,this.number==Number.MAX_SAFE_INTEGER?null:this.number,this.visible];
+  }
 }
 
 module.exports = Cell

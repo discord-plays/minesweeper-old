@@ -262,26 +262,24 @@ class LoadedTexturepack {
     var size = [6, 10];
     return this.getIcon(n * size[0] + topLeft[0], topLeft[1], ...size, true);
   }
-  getMicroNumber(n) {
-    var topLeft = [60, 160];
+  getMicroNumberBlackBlue(n) {
+    return this.getMicroNumber(n,[0,170]);
+  }
+  getMicroNumberWhiteBlue(n) {
+    return this.getMicroNumber(n,[15,170]);
+  }
+  getMicroNumber(n, topLeft=null) {
+    if (n<0||n>9) return null;
+    topLeft = topLeft==null?[30, 170]:topLeft;
     var size = [3, 5];
-    var numbersTop = [1, 2, 3, 4, 5];
-    var numbersBottom = [6, 7, 8, 9, 0];
-    if (numbersTop.includes(n))
-      return this.getIcon(
-        numbersTop.indexOf(n) * size[0] + topLeft[0],
-        topLeft[1],
-        ...size,
-        true
-      );
-    else if (numbersBottom.includes(n))
-      return this.getIcon(
-        numbersBottom.indexOf(n) * size[0] + topLeft[0],
-        topLeft[1] + size[1],
-        ...size,
-        true
-      );
-    else return null;
+    let row = n == 0 ? 1 : Math.floor((n-1)/5);
+    let col = (n == 0 ? 4 : (n-1)) % 5;
+    return this.getIcon(
+      col * size[0] + topLeft[0],
+      row * size[1] + topLeft[1],
+      ...size,
+      true
+    );
   }
   getDoubleNumber(n) {
     var base = this.getIcon(10, 2);

@@ -12,13 +12,14 @@ function helpCommand(bot, msg, args = []) {
     var commandScript = bot.findCommand(command);
     if (commandScript == null) throw new Error(`Error: command \`${command}\` doesn't exist`);
     else if (commandScript.hasOwnProperty("help")) {
-      var onlyDebug = false;
-      if (commandScript.hasOwnProperty("debugOnly") && commandScript.debugOnly) onlyDebug = true;
-      if (!onlyDebug || bot.DEBUG) {
-        arr = commandScript.help;
-        if (commandScript.hasOwnProperty("example")) {
-          exArr = commandScript.example.map(x => x.replace(/^`>/, `\`${settings.prefix}`));
-        }
+      let isHidden = commandScript.hasOwnProperty("isHidden") && commandScript.isHidden;
+      let onlyDebug = commandScript.hasOwnProperty("debugOnly") && commandScript.debugOnly;
+
+      if (isHidden || (!bot.DEBUG && onlyDebug)) throw new Error(`Error: command \`${command}\` doesn't exist`);
+
+      arr = commandScript.help;
+      if (commandScript.hasOwnProperty("example")) {
+        exArr = commandScript.example.map(x => x.replace(/^`>/, `\`${settings.prefix}`));
       }
     }
   }
@@ -38,10 +39,9 @@ function generateGeneralHelpText(bot, msg) {
   for (var i = 0; i < commandNames.length; i++) {
     var comm = bot.findCommand(commandNames[i]);
     if (!comm.hasOwnProperty("help")) continue;
-    var onlyDebug = false;
-    if (comm.hasOwnProperty("debugOnly"))
-      if (comm.debugOnly) onlyDebug = true;
-    if (!bot.DEBUG && onlyDebug) continue;
+    let isHidden = comm.hasOwnProperty("isHidden") && comm.isHidden;
+    let onlyDebug = comm.hasOwnProperty("debugOnly") && comm.debugOnly;
+    if (isHidden || (!bot.DEBUG && onlyDebug)) continue;
     commandDetails.push(`\`${settings.prefix}help ${commandNames[i]}\` -${onlyDebug?" (DEBUG)":""} ${bot.findCommand(commandNames[i]).help}`);
   }
   return commandDetails;

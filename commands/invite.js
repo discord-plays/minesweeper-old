@@ -1,24 +1,24 @@
 const Discord = require("discord.js");
 
-function creditsCommand(bot, msg, args = []) {
+function inviteCommand(bot, msg, args = []) {
   var embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-    .setTitle("Credits")
-    .addFields(bot.CREDITS);
+    .setTitle("Invite Link")
+    .setDescription(`[Invite @${bot.client.user.tag}](https://discordapp.com/oauth2/authorize?client_id=${bot.DISCORD_ID}&scope=bot)`);
   msg.channel.send(embed);
 }
 
 var helpExample = [
-  "`>credits`"
+  "`>invite`"
 ];
 
 var helpText = [
-  "Thanks to all these people for working on the bot"
+  "Shows the invite link"
 ];
 
 module.exports = {
-  command: creditsCommand,
+  command: inviteCommand,
   help: helpText,
   example: helpExample
 };
