@@ -15,8 +15,8 @@ function digCommand(bot, msg, args, _a = true) {
         throw new Error(`Error: Cell \`${args[i]}\` is invalid, command execution stopped!`);
       }
       var cell = board.get(cellPos.col, cellPos.row);
-      if (cell.visible) return;
       if (cell.flag != 0) throw new Error("Error: You can't dig a flagged cell");
+      if (cell.visible) return;
       if (cell.mine != 0) {
         cell.visible = true;
         return board.bombExplode();
