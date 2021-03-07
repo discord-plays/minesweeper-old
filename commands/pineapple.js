@@ -16,5 +16,6 @@ var helpText = [
 module.exports = {
   command: pineappleCommand,
   help: helpText,
+  isHidden: true,
   example: helpExample
 };
