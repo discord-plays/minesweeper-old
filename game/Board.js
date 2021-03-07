@@ -3,7 +3,8 @@ const Jimp = require("jimp");
 const ndarray = require("ndarray");
 const Cell = require('./Cell');
 const randomgen = require('../utils/randomgen');
-const { promises : fs } = require("fs")
+const { promises : fs } = require("fs");
+const path = require('path');
 
 class MinesweeperBoard {
   constructor(bot, boardId, guildId, channelId, width, height, seed, texturepack) {
@@ -39,7 +40,7 @@ class MinesweeperBoard {
 
   getRawData() {
     return {
-      board: this.board,
+      board: this.board.data,
       seed: {base: this.seed, live: this.r.live},
       width: this.width,
       height: this.height,
@@ -68,10 +69,11 @@ class MinesweeperBoard {
 
   save() {
     let $t=this;
-    fs.writeFile(path.join(bot.boardDataPath,this.id), this.getRawData(), { encoding: 'utf8' }).then(() => {
+    fs.writeFile(path.join($t.bot.boardDataPath,$t.id+".json"), JSON.stringify($t.getRawData()), { encoding: 'utf8' }).then(() => {
       /* Ignore cuz it saved fine */
-    }).catch(()=>{
+    }).catch((err)=>{
       console.error(`Failed to save board ${$t.id} lol`);
+      console.error(err);
     });
   }
 
@@ -115,7 +117,7 @@ class MinesweeperBoard {
           baseimg.composite(view == null ? textures.getDebugPinkBlack() : view, (1 + x) * 16, (1 + y) * 16);
         }
 
-      var finalImage = baseimg.resize(baseimg.bitmap.width * 16, Jimp.AUTO, Jimp.RESIZE_NEAREST_NEIGHBOR);
+      var finalImage = baseimg.resize(baseimg.bitmap.width * 8, Jimp.AUTO, Jimp.RESIZE_NEAREST_NEIGHBOR);
       return await finalImage.getBufferAsync(Jimp.MIME_PNG);
     } catch (err) {
       console.error("Issue creating new image in memory");
@@ -410,7 +412,10 @@ class MinesweeperBoard {
   }
 
   calculateCurrentCellView(textures, cell, showExploded = true) {
-    if (showExploded && cell.mined) return textures.getRedExclamationMark();
+    if (showExploded && cell.mined) {
+      if (cell.visible) return textures.getMine(cell.mine);
+      else return textures.getRedExclamationMark();
+    }
     if (!cell.visible) return textures.raisedCell();
     if (cell.flagged) return textures.getFlag(cell.flag);
     if (cell.mined) return textures.getMine(cell.mine);
