@@ -102,7 +102,7 @@ app.get("/login", (req,res,...a)=>{
     client.getAccessToken(req.query.get('code')).then(token => {
       let id=createId();
       sessions[id]={id:id,code:token.accessToken};
-      res.cookie('session', id);
+      res.cookie('session', id, {expires:new Date(Date.now()+10*365*24*60*60*1000)});
       res.redirect('/create');
     }).catch(()=>{
       res.status(500).send('Error: OAuth processing failed');
