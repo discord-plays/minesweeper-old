@@ -47,51 +47,85 @@ app.use('/styles',express.static(path.join(www,'styles')));
 app.use('/scripts',express.static(path.join(www,"scripts")));
 app.use('/images',express.static(path.join(www,"images")));
 
-app.get("/create", (req,res,...a)=>{
+function checkSession(req, res, callback) {
   if(sessions.hasOwnProperty(req.cookies.session)) {
     let mySession = sessions[req.cookies.session];
-    client.getUser(mySession.code).then(user => {
-      sessions[req.cookies.session].channel = users.hasOwnProperty(user.id)?users[user.id].channel:undefined;
-      res.render(getFile('create.ejs'),{
-        bot:botData,
-        user:{
-          tag:user.tag,
-          channel:(users.hasOwnProperty(user.id)?users[user.id].channel:undefined)
-        }
+    if(!mySession.loadedData) {
+      client.getUser(mySession.code).then(user => {
+        sessions[req.cookies.session].user = user;
+        callback(mySession);
+      }).catch((e) => {
+        console.log(e);
+        res.status(500).send('Error: User details processing failed');
       });
-    }).catch((e)=>{
-      console.log(e);
-      res.status(500).send('Error: User details processing failed');
-    });
+    }
   } else {
     res.redirect('/login');
   }
+}
+
+app.get("/create", (req, res, ...a)=>{
+  checkSession(req, res, mySession => {
+    let userChannel = users.hasOwnProperty(mySession.user.id) ? users[mySession.user.id].channel : undefined;
+
+    res.render(getFile('create.ejs'), {
+      minesweeper: bot,
+      bot: botData,
+      user: {
+        tag: mySession.user.tag,
+        channel: userChannel
+      },
+      minedata: bot.getMinesLayered()
+    });
+  })
 });
 
-app.post("/create", express.json(), (req,res,...a)=>{
+app.get("/settings", (req,res,...a)=>{
+  checkSession(req, res, mySession => {
+    let userChannel = users.hasOwnProperty(mySession.user.id) ? users[mySession.user.id].channel : undefined;
+
+    res.render(getFile('settings.ejs'), {
+      minesweeper: bot,
+      bot: botData,
+      user: {
+        tag: mySession.user.tag,
+        channel: userChannel
+      }
+    })
+  });
+});
+
+app.post("/create", express.json(), (req, res, ...a)=>{
   if(bot!=null) {
     let j = req.body;
     if(!j.hasOwnProperty("board")) return res.status(200).send(JSON.stringify({state:-1}));
     if(!j.hasOwnProperty("mines")) return res.status(200).send(JSON.stringify({state:-1}));
 
-    if(sessions.hasOwnProperty(req.cookies.session)) {
-      let mySession = sessions[req.cookies.session];
-      if(mySession.channel!=undefined) {
-        try {
-          bot.startGame(mySession.channel,j);
-          res.status(200).send(JSON.stringify({state:1}))
-        } catch(err) {
-          if (err.message.indexOf("Error: ") == 0) {
-            res.status(200).send(JSON.stringify({state:999,message:err.message.slice(7, err.message.length)}));
-          } else {
-            res.status(500).send('Internal server error');
-            console.error(err);
-          }
-        }
-      } else {
-        res.status(200).send(JSON.stringify({state:4}))
+    checkSession(req, res, mySession => {
+      let userChannel = users.hasOwnProperty(mySession.user.id) ? users[mySession.user.id].channel : undefined;
+
+      if(userChannel == undefined) {
+        res.status(200).send(JSON.stringify({state:4}));
+        return;
       }
-    }
+
+      try {
+        bot.startGame(mySession.channel, j);
+        res.status(200).send(JSON.stringify({
+          state: 1
+        }))
+      } catch (err) {
+        if (err.message.indexOf("Error: ") == 0) {
+          res.status(200).send(JSON.stringify({
+            state: 999,
+            message: err.message.slice(7, err.message.length)
+          }));
+        } else {
+          res.status(500).send('Internal server error');
+          console.error(err);
+        }
+      }
+    });
   } else {
     res.status(500).send('Internal server error');
   }
