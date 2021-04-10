@@ -31,7 +31,15 @@ function generate_json() {
   return data;
 }
 
+function activateMineDataDropdown(id) {
+  let v=$(document.getElementById(id));
+  $('.MineData-all').stop().slideUp(500);
+  v.stop().slideDown(500);
+}
+
 $(document).ready(function () {
+  $('.MineData-all').stop().slideUp(0);
+
   $("#start-button").click(function() {
     $("#start-button").notify("Creating board...", "info");
     $.ajax({

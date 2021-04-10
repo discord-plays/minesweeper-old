@@ -5,36 +5,37 @@
     <% } else { %>
       <title>Discord Plays Minesweeper</title>
     <% } %>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="images/logo.png">
-    <link rel="stylesheet" href="styles/create.css">
 
-    <script src="https://static.onpointcoding.net/cdn/jquery/jquery.js"></script>
-    <script src="https://static.onpointcoding.net/cdn/notifyjs/notifyjs.min.js"></script>
+    <%- include('header') %>
+
     <script src="scripts/create.js"></script>
   </head>
-  <body>
-    <% if(bot) { %>
-      <h1>@<%= bot.tag %></h1>
-      <% if(user) { %>
-        <p>You are logged in as: @<%= user.tag %></p>
-        <% if(user.channel) { %>
-          <% if(user.channel.guild) { %>
-            <p id="guild-info">Guild: <%= user.channel.guild.name %></p>
-            <p id="channel-info">Channel: #<%= user.channel.name %></p>
-          <% } else { %>
-            <p id="channel-info">Channel: Direct messages</p>
+  <body class="opc-darkmode w3-theme-l2">
+    <%- include('navbar') %>
+    <div class="w3-container opc-center-container">
+      <div class="w3-container w3-card-4 w3-light-grey w3-text-black w3-padding-16 profileMain w3-theme-l1">
+        <% if(bot) { %>
+          <h1>@<%= bot.tag %></h1>
+          <% if(user) { %>
+            <p>You are logged in as: @<%= user.tag %></p>
+            <% if(user.channel) { %>
+              <% if(user.channel.guild) { %>
+                <p id="guild-info">Guild: <%= user.channel.guild.name %></p>
+                <p id="channel-info">Channel: #<%= user.channel.name %></p>
+              <% } else { %>
+                <p id="channel-info">Channel: Direct messages</p>
+              <% } %>
+              <p>To change channel run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+              <div><%- include('generator', {minesweeper:minesweeper,minedata:minedata}) %></div>
+            <% } else { %>
+              <p>Run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+            <% } %>
           <% } %>
-          <p>To change channel run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
-          <div><%- include('generator') %></div>
         <% } else { %>
-          <p>Run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+          <h1>Discord Plays Minesweeper</h1>
+          <p>The bot has not started yet.</p>
         <% } %>
-      <% } %>
-    <% } else { %>
-      <h1>Discord Plays Minesweeper</h1>
-      <p>The bot has not started yet.</p>
-    <% } %>
+      </div>
+    </div>
   </body>
 </html>
