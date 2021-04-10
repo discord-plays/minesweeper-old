@@ -5,7 +5,8 @@ const Assets = require('./Assets');
 const CommandsList = require("./CommandsList");
 const Board = require('./Board');
 const MenuController = require('../ui/Controller');
-const TotalResources = 2;
+const ModLoader = require("./ModLoader");
+const TotalResources = 1;
 const defaultGuildSettings = {
   prefix: '>'
 }
@@ -17,6 +18,7 @@ class MinesweeperBot {
     this.starttime = new Date();
     this.client = client;
     this.loadedresources = 0;
+    this.loadedcommands = 0;
     this.web = server;
 
     // guildSettingsPath, userSettingsPath, maxBoardX, maxBoardY, jsonfile, datadir, basedir
@@ -31,11 +33,53 @@ class MinesweeperBot {
     this.__commandslist = new CommandsList(this.basedir);
     this.__commandslist.load().then(() => {
       console.log("Loaded commands list");
-      $t.loadedresources++;
+      $t.loadedcommands++;
     });
+
     this.__boards = {};
-    this.__mines = [...$t.getDefaultMines()];
-    this.__flags = [...$t.getDefaultFlags()];
+    this.__mines = {};
+    this.__flags = {};
+
+    this.modLoader = new ModLoader(this,this.basedir);
+    this.modLoader.load().then(()=>{
+      console.log(this.__mines);
+    });
+  }
+
+  getMines() {
+    return Object.values(this.__mines).flatMap(x=>x);
+  }
+
+  getMinesLayered() {
+    return this.__mines;
+  }
+
+  getFlags() {
+    return Object.values(this.__flags).flatMap(x=>x);
+  }
+
+  getFlagsLayered() {
+    return this.__flags;
+  }
+
+  findMine(name) {
+    let n = name.toLowerCase();
+    let f = this.getMines().filter(x=>x.name.toLowerCase()==n);
+    return f.length==1 ? f[0] : null;
+  }
+
+  findFlag(name) {
+    let n = name.toLowerCase();
+    let f = this.getFlags().filter(x=>x.name.toLowerCase()==n);
+    return f.length==1 ? f[0] : null;
+  }
+
+  addMine(mod, mine) {
+    if(!this.__mines.hasOwnProperty(mod.id)) this.__mines[mod.id] = [];
+    if(!this.__flags.hasOwnProperty(mod.id)) this.__flags[mod.id] = [];
+    mine.mod = mod;
+    this.__mines[mod.id].push(mine);
+    this.__flags[mod.id].push(mine);
   }
 
   startGame(channel, j) {
@@ -58,8 +102,10 @@ class MinesweeperBot {
     }
 
     var k = Object.keys(j.mines);
+    let m = [];
     for (var i = 0; i < k.length; i++) {
       if (isNaN(j.mines[k[i]])) throw new Error("Error: Invalid mine count!");
+      m.push()
       j.mines[k[i]] = parseInt(j.mines[k[i]].toString().trim());
     }
 
@@ -71,94 +117,6 @@ class MinesweeperBot {
     board.fillNumbers();
     board.save();
     board.displayBoard();
-  }
-
-  getDefaultMines() {
-    return [{
-        id: 0,
-        names: ["none", "empty"]
-      }, {
-        id: 1,
-        names: ["single"]
-      },
-      {
-        id: 2,
-        names: ["double"]
-      },
-      {
-        id: 3,
-        names: ["triple"]
-      },
-      {
-        id: 4,
-        names: ["Quadruple"]
-      },
-      {
-        id: 5,
-        names: ["Quintuple"]
-      },
-      {
-        id: 6,
-        names: ["Sextuple"]
-      },
-      {
-        id: 7,
-        names: ["Septuple"]
-      },
-      {
-        id: 8,
-        names: ["Octuple"]
-      },
-      {
-        id: 9,
-        names: ["Nonuple"]
-      },
-      {
-        id: 10,
-        names: ["Decuple"]
-      }
-    ];
-  }
-
-  getDefaultFlags() {
-    return [{
-        id: 0,
-        names: ["none", "empty"]
-      }, {
-        id: 1,
-        names: ["single"]
-      },
-      {
-        id: 2,
-        names: ["double"]
-      },
-      {
-        id: 3,
-        names: ["triple"]
-      },
-      {
-        id: 4,
-        names: ["Quadruple"]
-      }, {
-        id: 5,
-        names: ["Quintuple"]
-      }, {
-        id: 6,
-        names: ["Sextuple"]
-      }, {
-        id: 7,
-        names: ["Septuple"]
-      }, {
-        id: 8,
-        names: ["Octuple"]
-      }, {
-        id: 9,
-        names: ["Nonuple"]
-      }, {
-        id: 10,
-        names: ["Decuple"]
-      }
-    ]
   }
 
   getMine(ref) {

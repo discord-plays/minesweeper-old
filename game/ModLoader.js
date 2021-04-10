@@ -1,8 +1,11 @@
-const Globber = require("./Globber")
+const Globber = require("./Globber");
+const path = require('path');
+const ModHandle = require('./ModHandle');
 
 class ModLoader extends Globber {
-  constructor(basedir) {
+  constructor(minesweeper, basedir) {
     super(path.join(basedir, 'mods'), '*/');
+    this.minesweeper = minesweeper;
     this.mods = [];
   }
 
@@ -11,8 +14,8 @@ class ModLoader extends Globber {
     console.error(err);
   }
 
-  import(path) {
-    this.mods.push(new Mod(path));
+  import(p) {
+    this.mods.push(new ModHandle(this.minesweeper, p));
   }
 
   find(name) {
@@ -21,16 +24,19 @@ class ModLoader extends Globber {
     return z[0];
   }
 
-  load() {
-    this.mods.forEach(mod=>{
-      mod.load();
-    })
+  get(id) {
+    var z = this.mods.filter(x => x.mod.id == id);
+    if (z.length != 1) return null;
+    return z[0];
   }
 
-  unload() {
-    this.mods.forEach(mod=>{
-      mod.unload();
-    })
+  load() {
+    return super.load().then(()=>{
+      this.mods.forEach(mod=>{
+        console.log(`Loading mod: ${mod.name}`);
+        mod.load();
+      });
+    });
   }
 }
 

@@ -206,6 +206,7 @@ class MinesweeperBoard {
     return false;
   }
 
+  // TODO: find all the mines and set the numbers around them
   fillNumbers() {
     var $t = this;
     for (var i = 0; i < $t.width; i++)

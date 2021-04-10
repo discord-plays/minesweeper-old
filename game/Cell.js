@@ -20,4 +20,4 @@ class Cell {
   }
 }
 
-module.exports = Cell
+module.exports = Cell;
