@@ -32,13 +32,29 @@ function generate_json() {
 }
 
 function activateMineDataDropdown(id) {
-  let v=$(document.getElementById(id));
+  let v=$(`.MineDataTab-all[data-rel="${id}"]`);
+  let w=$(`.MineData-all[data-rel="${id}-Dropdown"]`);
+
+  $('.MineDataTab-all').removeClass('dropdown-open');
   $('.MineData-all').stop().slideUp(500);
-  v.stop().slideDown(500);
+
+  console.log(v);
+  console.log(w);
+
+  if(!w.hasClass('dropdown-open')) {
+    v.addClass('dropdown-open');
+    w.stop().addClass('dropdown-open').slideDown(500);
+  } else {
+    $('.MineData-all').removeClass('dropdown-open');
+  }
 }
 
 $(document).ready(function () {
   $('.MineData-all').stop().slideUp(0);
+
+  $('.MineDataTab-all').click(function() {
+    activateMineDataDropdown($(this).data('rel'));
+  })
 
   $("#start-button").click(function() {
     $("#start-button").notify("Creating board...", "info");

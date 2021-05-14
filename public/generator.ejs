@@ -13,8 +13,8 @@
       <% for(let i=0;i<k.length;i++) { %>
         <% let mod = minesweeper.modLoader.get(k[i]).mod; %>
         <div>
-          <button onclick="activateMineDataDropdown('MineData-<%= mod.id %>')" class="w3-button w3-block w3-left-align"><%= mod.name %></button>
-          <div id="MineData-<%= mod.id %>" class="MineData-all w3-container">
+          <button data-rel="MineData-<%= mod.id.replace(/\./g,'_') %>" class="w3-button w3-block w3-left-align MineDataTab-all"><%= mod.name %></button>
+          <div data-rel="MineData-<%= mod.id.replace(/\./g, '_') %>-Dropdown" class="MineData-all w3-container">
             <ul>
               <% let k2 = minedata[mod.id]; %>
               <% if(k2.length >= 1) { %>

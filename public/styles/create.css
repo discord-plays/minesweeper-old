@@ -1,0 +1,53 @@
+.MineDataTab-all {
+  line-height: 30px;
+  position: relative;
+  padding-left: 52px;
+}
+
+.MineDataTab-all::before {
+  transform: rotate(30deg);
+  transition: transform 500ms linear, top 500ms linear, left 500ms linear;
+  position: absolute;
+  left: 10px;
+  top: 13px;
+  display: inline-block;
+  content: " ";
+  background: #e2e2e2;
+  width: 30px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.MineDataTab-all::after {
+  transform: rotate(-30deg);
+  transition: transform 500ms linear, bottom 500ms linear, left 500ms linear;
+  position: absolute;
+  left: 10px;
+  bottom: 13px;
+  display: inline-block;
+  content: " ";
+  background: #e2e2e2;
+  width: 30px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.MineDataTab-all.dropdown-open::before {
+  transform: rotate(-120deg);
+  top: 19px;
+  left: 10px;
+}
+
+.MineDataTab-all.dropdown-open::after {
+  transform: rotate(120deg);
+  bottom: 19px;
+  left: 22px;
+}
+
+.MineDataTab-all:hover::before {
+  background: #000000;
+}
+
+.MineDataTab-all:hover::after {
+  background: #000000;
+}
