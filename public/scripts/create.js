@@ -42,6 +42,7 @@ function activateMineDataDropdown(id) {
   console.log(w);
 
   if(!w.hasClass('dropdown-open')) {
+    $('.MineData-all').removeClass('dropdown-open');
     v.addClass('dropdown-open');
     w.stop().addClass('dropdown-open').slideDown(500);
   } else {
