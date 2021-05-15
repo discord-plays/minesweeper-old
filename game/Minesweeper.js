@@ -11,6 +11,8 @@ const defaultGuildSettings = {
   prefix: '>'
 }
 
+const DEBUG_LOGGING = require('../debug_logging');
+
 class MinesweeperBot {
   constructor(client, server, options) {
     var $t = this;
@@ -42,7 +44,7 @@ class MinesweeperBot {
 
     this.modLoader = new ModLoader(this,this.basedir);
     this.modLoader.load().then(()=>{
-      console.log(this.__mines);
+      if (DEBUG_LOGGING) console.log(this.__mines);
     });
   }
 

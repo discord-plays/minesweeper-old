@@ -1,4 +1,4 @@
-const DEBUG = require('../debug');
+const DEBUG_LOGGING = require('../debug_logging');
 const glob = require("glob");
 const path = require("path");
 
@@ -14,7 +14,7 @@ class Globber {
       var that = this;
       glob(that.globpath, (err, files) => {
         if (err) return that.error(err);
-        if (DEBUG) console.log(files);
+        if (DEBUG_LOGGING) console.log(files);
         for (var i = 0; i < files.length; i++) {
           that.import(files[i]);
         }
