@@ -87,14 +87,14 @@ class MinesweeperBot {
   startGame(channel, j) {
     // get the guild and channel ids
     let guildId, channelId;
-    [guildId, channelId] = [(channel.guild==undefined||channel.guild==null) ? "dm" : channel.guild.id, channel.id];
-    let boardId = guildId + "-" + channelId;
+    [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
+    let boardId = `${guildId}-${channelId}`;
 
     if (this.isBoard(boardId)) throw new Error("Error: There is already a board running in this channel!");
 
     let xSize = parseInt(j.board.width);
     let ySize = parseInt(j.board.height);
-    if(isNaN(xSize)||isNaN(ySize)) throw new Error("Error: Invalid board size!");
+    if (isNaN(xSize) || isNaN(ySize)) throw new Error("Error: Invalid board size!");
 
     if (xSize <= 0 || ySize <= 0) {
       throw new Error("Error: Board too small!");

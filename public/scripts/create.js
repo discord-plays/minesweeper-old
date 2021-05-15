@@ -4,12 +4,14 @@ function generate_json() {
     board: {}
   }
 
-  var $mines = $(".mines-num")
+  var $mines = $(".mine-generator-embed")
   for (var i = 0; i < $mines.length; i++) {
+    let $mine = $($mines[i]);
+    let $mineid = $mine.attr('mineid');
     try {
-      var j = parseInt($($mines[i]).val());
+      var j = parseInt($mine.val());
       if (j > 0 && j != null) {
-        data.mines[$($mines[i]).attr('num')] = j;
+        data.mines[$mineid] = j;
       }
     } catch (err) {
       /* ignore this? */
@@ -37,9 +39,6 @@ function activateMineDataDropdown(id) {
 
   $('.MineDataTab-all').removeClass('dropdown-open');
   $('.MineData-all').stop().slideUp(500);
-
-  console.log(v);
-  console.log(w);
 
   if(!w.hasClass('dropdown-open')) {
     $('.MineData-all').removeClass('dropdown-open');

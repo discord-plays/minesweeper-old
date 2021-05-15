@@ -391,11 +391,14 @@ class MinesweeperBoard {
 
   getMineEmbedContent() {
     let o=[];
-    let names = this.bot.getDefaultMines();
+    let mines = this.bot.getMines();
 
-    let d = Object.keys(this.totalMineCounts);
-    for(let i=0;i<d.length;i++) {
-      o.push(`${this.totalMineCounts[d[i]]} x ${names[d[i]].names[0]}`);
+    let k = Object.keys(this.totalMineCounts);
+    for(let i=0;i<k.length;i++) {
+      let f = mines.filter(x=>x.id == k[i]);
+      if(f.length > 0) {
+        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name}`);
+      }
     }
 
     return o.join('\n');

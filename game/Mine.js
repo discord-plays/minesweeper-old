@@ -41,7 +41,7 @@ class Mine {
    * This can be overridden for a custom input or custom styles
    */
   getMineGeneratorEmbed() {
-    return `<li>${this.name}: <input class="mine-generator-embed" mineid="${this.id.replace(/\./g, '_')}" type="number"></li>`;
+    return `<li>${this.name}: <input class="mine-generator-embed" mineid="${this.id}" type="number"></li>`;
   }
 
   /*
