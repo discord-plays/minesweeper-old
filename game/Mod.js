@@ -4,7 +4,11 @@ class Mod {
     this.name = name;
     this.minesweeper = minesweeper;
     var $t=this;
-    this.mines = {add:mine=>this.minesweeper.addMine($t,mine)};
+    this.mines = {add: mine => {
+      mine.id = `${$t.id}.${mine.id}`;
+      this.minesweeper.addMine($t,mine);
+      return mine;
+    }};
   }
 }
 
