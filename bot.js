@@ -1,4 +1,5 @@
 const DEBUG = require('./debug');
+const DEBUG_LOGGING = require('./debug_logging');
 const CREDITS = require('./credits');
 
 const path = require("path");
@@ -42,6 +43,7 @@ const DISCORD_ID = process.env.DISCORD_ID;
 const options = {
   DISCORD_ID,
   DEBUG,
+  DEBUG_LOGGING,
   CREDITS,
   jsonfile,
   maxBoardX,
@@ -52,7 +54,6 @@ const options = {
   userSettingsPath,
   boardDataPath
 };
-
 
 // Make datadir and subfolders
 if (!fs.existsSync(datadir)) fs.mkdirSync(datadir);
@@ -69,7 +70,7 @@ client.on("ready", () => {
   bot.start();
 
   myServer.sendMinesweeperBot(bot);
-  myServer.sendBotData({tag:client.user.tag});
+  myServer.sendBotData({tag: client.user.tag});
 });
 
 client.on("message", message => {
@@ -82,12 +83,12 @@ client.on("message", message => {
   if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) return bot.processCommand(message, config);
 });
 
-client.on("messageReactionAdd",(reaction,user)=>{
-  bot.menuController.addReaction(reaction,user);
+client.on("messageReactionAdd", (reaction, user) => {
+  bot.menuController.addReaction(reaction, user);
 });
 
-client.on("messageReactionRemove",(reaction,user)=>{
-  bot.menuController.removeReaction(reaction,user);
+client.on("messageReactionRemove", (reaction, user) => {
+  bot.menuController.removeReaction(reaction, user);
 });
 
 // login stuffs

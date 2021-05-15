@@ -60,11 +60,11 @@ $(document).ready(function () {
   $("#start-button").click(function() {
     $("#start-button").notify("Creating board...", "info");
     $.ajax({
-      method:'POST',
-      url:'create',
-      data:JSON.stringify(generate_json()),
+      method: 'POST',
+      url: 'create',
+      data: JSON.stringify(generate_json()),
       contentType: 'application/json',
-      success:function(d) {
+      success: function(d) {
         let j=JSON.parse(d);
         if(j.state==1)
           $("#start-button").notify("The board was created go back to Discord to play!", "success");
@@ -79,7 +79,7 @@ $(document).ready(function () {
         else
           $("#start-button").notify("Your board was rejected. The data you sent was probably invalid, this shouldn't happen LUL!", "error");
       },
-      error:function(err) {
+      error: function(err) {
         console.error(err);
         $("#start-button").notify("There was an error creating the board!", "error");
       }
