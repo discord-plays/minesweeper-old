@@ -10,6 +10,12 @@ class ArrayInput extends BaseInput {
     this.options = [];
   }
 
+  getFancyValue() {
+    let opt = this.options[this.value];
+    if(opt) return opt.symbol;
+    else return null;
+  }
+
   editEmbed(embed) {
     let o=[this.description];
     for(let i=0;i<this.options.length;i++) o.push(`(${this.options[i].symbol}) ${this.value==i?'**':''}${this.options[i].name}${this.value==i?'** '+BUTTON_O.name:''}`);
@@ -22,8 +28,8 @@ class ArrayInput extends BaseInput {
 
   clickButton(button) {
     for(let i=0; i<this.options.length; i++) {
-      if(button.id == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_button-${i}`) {
-        button.defer();
+      if(button.customId == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_button-${i}`) {
+        button.deferUpdate();
         this.value = i;
         this.menu.changeWidget(this);
         this.triggerCallback();

@@ -6,6 +6,14 @@ class Controller {
     this.sent = [];
   }
 
+  addTrigger(message, input, user, type) {
+    for(let i=0;i<this.sent.length;i++) {
+      if(this.sent[i].message.id == message.id) this.sent.splice(i,1);
+      else if(this.sent[i].user.id == user.id) this.sent.splice(i,1);
+    }
+    this.sent.push({message,input,user,type});
+  }
+
   createMenu(user) {
     this.destroyUserMenu(user);
     let menu = new Menu(this,user);
@@ -35,6 +43,10 @@ class Controller {
   removeTriggersForMessage(message) {
     let i=0;
     while(i<this.sent.length) {
+      if(message == null) {
+        this.sent.splice(i,1);
+        continue;
+      }
       if(this.sent[i].message.id==message.id) this.sent.splice(i,1);
       else i++;
     }

@@ -1,7 +1,6 @@
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton, Constants } = require('discord.js');
 const { BUTTON_MENU } = require('./EmojiButtons');
 
-const { MessageButton, MessageActionRow } = require('discord-buttons');
 const MAX_ACTION_ROW_WIDTH = 5;
 
 class BaseInput {
@@ -15,6 +14,11 @@ class BaseInput {
     this.value = null;
     this.callback = null;
     this.options = [];
+  }
+
+  getFancyValue() {
+    /* Can be overridden to output a better value for this widget */
+    return this.value;
   }
 
   setCallback(callback) {
@@ -45,9 +49,9 @@ class BaseInput {
     for(let i=0;i<this.options.length;i++) o.push(
       new MessageButton()
         .setLabel(this.options[i].name)
-        .setStyle("grey")
+        .setStyle(Constants.MessageButtonStyles.SECONDARY)
         .setEmoji(this.options[i].symbol)
-        .setID(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_button-${i}`)
+        .setCustomId(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_button-${i}`)
     );
     return o;
   }
@@ -60,7 +64,7 @@ class BaseInput {
       throw new Exception("idk what to do?");
     }
 
-    opts.splice(0,0,new MessageButton().setLabel("Back").setStyle("blurple").setEmoji(BUTTON_MENU.symbol).setID(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_home`));
+    opts.splice(0,0,new MessageButton().setLabel("Back").setStyle(Constants.MessageButtonStyles.PRIMARY).setEmoji(BUTTON_MENU.symbol).setCustomId(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_home`));
 
     let rows = [];
     let y = Math.ceil(opts.length / MAX_ACTION_ROW_WIDTH);
@@ -69,13 +73,13 @@ class BaseInput {
     }
 
     for(let i=0;i<opts.length;i++) {
-      rows[Math.floor(i/MAX_ACTION_ROW_WIDTH)].addComponent(opts[i]);
+      rows[Math.floor(i/MAX_ACTION_ROW_WIDTH)].addComponents(opts[i]);
     }
 
-    textChannel.send("",{embed:this.generateRichEmbed(),components:rows}).then(async m=>{
+    textChannel.send({embeds:[this.generateRichEmbed()],components:rows}).then(async m=>{
       $t.message = m;
       $t.menu.message = m;
-      $t.controller.sent.push({message:m,input:$t,user:$t.menu.user,type:'message-button'});
+      $t.controller.addTrigger(m,$t,$t.menu.user,'message-button');
     });
   }
 
@@ -85,11 +89,12 @@ class BaseInput {
   }
 
   clickButton(button) {
-    if(button.id == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_home`) {
-      button.defer();
-      return this.menu.showMenu();
+    if(button.customId == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_home`) {
+      button.deferUpdate();
+      this.menu.showMenu();
+    } else {
+      console.log(`Base input received click button. Maybe this is an error? (button id: ${button.customId})`);
     }
-    console.log(`Base input received click button. Maybe this is an error? (button id: ${button.id})`);
   }
 }
 

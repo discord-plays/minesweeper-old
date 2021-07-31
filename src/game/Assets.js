@@ -4,9 +4,8 @@ const Texturepack = require('./Texturepack');
 
 class Assets /*extends Globber*/ {
   constructor(basedir) {
-    //super(path.join(basedir, 'assets'), '*.png');
+    this.basedir = basedir;
     this.packs = [];
-
     this.import("%%default%%");
   }
 
@@ -22,11 +21,10 @@ class Assets /*extends Globber*/ {
   }
 
   import(path) {
-    this.packs.push(new Texturepack(path));
+    this.packs.push(new Texturepack(this.basedir, path));
   }
 
   find(name) {
-    return this.packs[0];
     var z = this.packs.filter(x => x.name == name);
     if (z.length != 1) return null;
     return z[0];

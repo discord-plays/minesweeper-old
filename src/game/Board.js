@@ -50,7 +50,8 @@ class MinesweeperBoard {
       channelId: this.channelId,
       texturepack: this.texturepack,
       won: this.won,
-      exploded: this.exploded
+      exploded: this.exploded,
+      totalMineCounts: this.totalMineCounts
     }
   }
 
@@ -66,6 +67,7 @@ class MinesweeperBoard {
     this.texturepack = d.texturepack;
     this.won = d.won;
     this.exploded = d.exploded;
+    this.totalMineCounts = d.totalMineCounts;
   }
 
   save() {
@@ -122,6 +124,7 @@ class MinesweeperBoard {
         for (var y = 0; y < $t.height; y++) {
           var cell = $t.get(x, y);
           var view = await $t.calculateCurrentCellView(textures, cell, $t.exploded);
+          console.log(view);
           baseimg.composite(view == null ? await textures.getDebugPinkBlack() : view, (1 + x) * 16, (1 + y) * 16);
         }
 
@@ -332,55 +335,61 @@ class MinesweeperBoard {
     var $t = this;
     if ($t.won) {
       $t.render().then(img => {
-        $t.getChannel().then(channel => channel.send(
-          new Discord.MessageEmbed()
-          .setColor("#00ff00")
-          .setAuthor("Congratulations!", $t.bot.jsonfile.logoGame)
-          .attachFiles([new Discord.MessageAttachment(img, "minesweeperboard.png")])
-          .setImage("attachment://minesweeperboard.png")
-        )).catch(reason => {
+        $t.getChannel().then(channel => channel.send({
+          embeds:[
+            new Discord.MessageEmbed()
+            .setColor("#00ff00")
+            .setAuthor("Congratulations!", $t.bot.jsonfile.logoGame)
+            .setImage("attachment://minesweeperboard.png")
+          ],
+          files:[
+            new Discord.MessageAttachment(img, "minesweeperboard.png")
+          ]
+        })).catch(reason => {
           console.error(reason);
         });
       });
     } else if ($t.exploded) {
-      $t.getChannel().then(channel => channel.send($t.generateBoardEmbed())
-        .then(m => {
+      $t.getChannel().then(channel => {
+        channel.send({embeds:[$t.generateBoardEmbed()]}).then(m => {
           $t.render().then(img => {
-            m.delete().catch(reason => {
-              console.error(reason);
-            });
-            channel.send(new Discord.MessageEmbed()
-              .setColor("#ff0000")
-              .setAuthor("You blew up.", $t.bot.jsonfile.logoGame)
-              .attachFiles([new Discord.MessageAttachment(img, "minesweeperboard.png")])
-              .setImage("attachment://minesweeperboard.png")).catch(reason => {
+            m.edit({
+              embeds:[
+                new Discord.MessageEmbed()
+                .setColor("#ff0000")
+                .setAuthor("You blew up.", $t.bot.jsonfile.logoGame)
+                .setImage("attachment://minesweeperboard.png")
+              ],
+              files:[
+                new Discord.MessageAttachment(img, "minesweeperboard.png")
+              ]
+            }).catch(reason => {
               console.error(reason);
             });
           });
         }).catch(reason => {
           console.error(reason);
-        })).catch(reason => {
+        })
+      }).catch(reason => {
         console.error(reason);
       });
     } else {
-      $t.getChannel().then(channel => channel.send($t.generateBoardEmbed().addField(
-          "Loading...",
-          "(eta 3 years)"
-        ))
-        .then(m => {
+      $t.getChannel().then(channel => {
+        channel.send({embeds:[
+          $t.generateBoardEmbed().addField("Loading...","(eta 3 years)")
+        ]}).then(m => {
           $t.render().then(img => {
-            m.delete().catch(reason => {
-              console.error(reason);
-            })
-            channel.send($t.generateBoardEmbed()
-              .attachFiles([new Discord.MessageAttachment(img, "minesweeperboard.png")])
-              .setImage("attachment://minesweeperboard.png")).catch(reason => {
+            m.edit({
+              files:[new Discord.MessageAttachment(img, "minesweeperboard.png")],
+              embeds:[$t.generateBoardEmbed().setImage("attachment://minesweeperboard.png")]
+            }).catch(reason => {
               console.error(reason);
             });
           });
         }).catch(reason => {
           console.error(reason);
-        })).catch(reason => {
+        })
+      }).catch(reason => {
         console.error(reason);
       });
     }
@@ -392,8 +401,8 @@ class MinesweeperBoard {
     return new Discord.MessageEmbed()
       .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
       .setTitle(`Standard (${$t.width}x${$t.height})`)
-      //.setDescription(">dig [A1] to dig | >flag [A1] (S,D,T,A) to flag")
-      .addField("Seed:", this.seed)
+      .setDescription(">dig [A1] to dig | >flag [A1] (S,D,T,A) to flag")
+      .addField("Seed:", `${$t.seed}`)
       .addField("Mines:", $t.getMineEmbedContent());
   }
 

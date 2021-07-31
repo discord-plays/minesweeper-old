@@ -1,4 +1,4 @@
-const {MessageEmbed} = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton, Constants } = require('discord.js');
 const StringInput = require('./widgets/StringInput');
 const ArrayInput = require('./widgets/ArrayInput');
 const BooleanInput = require('./widgets/BooleanInput');
@@ -6,7 +6,6 @@ const FloatInput = require('./widgets/FloatInput');
 const IntegerInput = require('./widgets/IntegerInput');
 const { BUTTON_NUMBERS } = require('./EmojiButtons.js');
 
-const { MessageButton, MessageActionRow } = require('discord-buttons');
 const MAX_ACTION_ROW_WIDTH = 5;
 
 class Menu {
@@ -56,7 +55,8 @@ class Menu {
       .setTitle(this.name)
       .setColor(this.color)
 
-    embed.setDescription(this.description);
+    let w=this.widgets.map(x=>`${x.name}: ${x.getFancyValue()}`);
+    embed.setDescription(this.description+'\n\n'+w.join('\n'));
     return embed;
   }
 
@@ -65,9 +65,9 @@ class Menu {
     for(let i=0;i<this.widgets.length;i++) o.push(
       new MessageButton()
         .setLabel(this.widgets[i].name)
-        .setStyle("grey")
+        .setStyle(Constants.MessageButtonStyles.SECONDARY)
         .setEmoji(this.widgets[i].symbol)
-        .setID(`${this.name.toLowerCase()}_button-${i}`)
+        .setCustomId(`${this.name.toLowerCase()}_button-${i}`)
     );
     return o;
   }
@@ -87,10 +87,10 @@ class Menu {
     }
 
     for(let i=0;i<opts.length;i++) {
-      rows[Math.floor(i/MAX_ACTION_ROW_WIDTH)].addComponent(opts[i]);
+      rows[Math.floor(i/MAX_ACTION_ROW_WIDTH)].addComponents(opts[i]);
     }
 
-    textChannel.send("",{embed:this.generateRichEmbed(),components:rows}).then(async m=>{
+    textChannel.send({embeds:[this.generateRichEmbed()],components:rows}).then(async m=>{
       $t.message = m;
       $t.controller.sent.push({message:m,input:$t,user:$t.user,type:'message-button'});
     });
@@ -122,8 +122,8 @@ class Menu {
 
   clickButton(button) {
     for(let i=0; i<this.widgets.length; i++) {
-      if(button.id == `${this.name.toLowerCase()}_button-${i}`) {
-        button.defer();
+      if(button.customId == `${this.name.toLowerCase()}_button-${i}`) {
+        button.deferUpdate();
         this.changeWidget(this.widgets[i]);
         break;
       }

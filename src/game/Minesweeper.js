@@ -76,6 +76,16 @@ class MinesweeperBot {
     return f.length==1 ? f[0] : null;
   }
 
+  getMineById(id) {
+    let f = this.getMines().filter(x=>x.id==id);
+    return f.length==1 ? f[0] : null;
+  }
+
+  getFlagById(id) {
+    let f = this.getFlags().filter(x=>x.id==id);
+    return f.length==1 ? f[0] : null;
+  }
+
   addMine(mod, mine) {
     if(!this.__mines.hasOwnProperty(mod.id)) this.__mines[mod.id] = [];
     if(!this.__flags.hasOwnProperty(mod.id)) this.__flags[mod.id] = [];
@@ -114,7 +124,7 @@ class MinesweeperBot {
     // Change seed for tournament or something?
     let seed = Math.floor(Math.random()*Math.pow(10,15));
 
-    var board = this.createBoard(boardId, guildId, channelId, xSize, ySize, seed, "default");
+    var board = this.createBoard(boardId, guildId, channelId, xSize, ySize, seed, "%%default%%");
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
@@ -122,35 +132,21 @@ class MinesweeperBot {
   }
 
   getMine(ref) {
-    var $t = this;
     ref = ref.toString().toLowerCase();
-    if (/^[0-9]+$/.test(ref)) {
-      var f = this.__mines.filter(x => x.id.toString() == ref);
-      if (f.length == 1) return f[0];
-      else if (f.length == 0) throw new Error(`Error: The mine \`${ref}\` doesn't exist`);
-      else throw new Error("Error: Multiple mines share the same ID");
-    } else {
-      var f = this.__mines.filter(x => x.names.includes(ref));
-      if (f.length == 1) return f[0];
-      else if (f.length == 0) throw new Error(`Error: The mine \`${ref}\` doesn't exist`);
-      else throw new Error("Error: Multiple mines share the same name or short name");
-    }
+
+    let f = this.getMines().filter(x=>x.getAlias().includes(ref));
+    if(f.length == 1) return f[0];
+    else if(f.length == 0) throw new Error(`Error: The mine \`${ref}\` doesn't exist`);
+    else throw new Error("Error: Multiple mines share an alias");
   }
 
   getFlag(ref) {
-    var $t = this;
     ref = ref.toString().toLowerCase();
-    if (/^[0-9]+$/.test(ref)) {
-      var f = this.__mines.filter(x => x.id.toString() == ref);
-      if (f.length == 1) return f[0];
-      else if (f.length == 0) throw new Error(`Error: The flag \`${ref}\` doesn't exist`);
-      else throw new Error("Error: Multiple flag share the same ID");
-    } else {
-      var f = this.__mines.filter(x => x.names.includes(ref));
-      if (f.length == 1) return f[0];
-      else if (f.length == 0) throw new Error(`Error: The flag \`${ref}\` doesn't exist`);
-      else throw new Error("Error: Multiple flag share the same name or short name");
-    }
+
+    let f = this.getFlags().filter(x=>x.getAlias().includes(ref));
+    if(f.length == 1) return f[0];
+    else if(f.length == 0) throw new Error(`Error: The flag \`${ref}\` doesn't exist`);
+    else throw new Error("Error: Multiple flags share an alias");
   }
 
   async getChannel(id) {
@@ -168,6 +164,7 @@ class MinesweeperBot {
 
   createBoard(id, guildId, channelId, width, height, seed, texturepack) {
     if (this.isBoard(id)) return false;
+    console.log("Creating board with seed: "+seed);
     this.__boards[id] = new Board(this, id, guildId, channelId, width, height, seed, texturepack);
     this.updateStatus();
     return this.__boards[id];
@@ -191,6 +188,7 @@ class MinesweeperBot {
     var active = $t.getRunningGames();
     act = act.replace('{{total-games}}', active);
     act = act.replace('{{label-games}}', active == 1 ? "game" : "games");
+    act = act.replace('{{sad-emoji}}', active == 0 ? "😦" : "");
     return act;
   }
 
@@ -218,6 +216,20 @@ class MinesweeperBot {
     throw new Error(`Error: There is no game running in this channel. Learn how to start one in \`${settings.prefix}help\``);
   }
 
+  getAllCommands() {
+    return new Promise((resolve, reject) => {
+      fs.readdir(path.join(this.basedir, 'commands'), (err, files) => {
+        if(err) {
+          console.error("Error collecting available commands");
+          reject("Error collecting available commands");
+          return;
+        }
+
+        resolve(files.map(x=>x.replace(/\.js$/g,'')));
+      });
+    });
+  }
+
   findCommand(primaryCommand) {
     try {
       var pathForCommandFile = path.join(this.basedir, 'commands', primaryCommand.replace(/[^a-zA-Z0-9]/g, '') + '.js');
@@ -232,36 +244,53 @@ class MinesweeperBot {
     return null;
   }
 
-  processCommand(receivedMessage, config) {
+  processMessageCommand(receivedMessage, config) {
     if (this.loadedresources != TotalResources) return receivedMessage.channel.send("Please wait while I finish loading my resources");
     var that = this;
     try {
-      let fullCommand = receivedMessage.content.substr(config.prefix.length); // Remove the leading exclamation mark
+      let fullCommand = receivedMessage.content.substr(config.prefix.length); // Remove the leading prefix characters
       let splitCommand = fullCommand.split(" "); // Split the message up in to pieces for each space
       let primaryCommand = splitCommand[0].toLowerCase(); // The first word directly after the exclamation is the command
       let args = splitCommand.slice(1); // All other words are arguments/parameters/options for the command
       let commandScript = that.findCommand(primaryCommand);
       if (commandScript != null) {
-        if (commandScript.hasOwnProperty('command')) return commandScript.command(that, receivedMessage, args);
+        if (commandScript.hasOwnProperty('messageCommand')) return commandScript.messageCommand(that, receivedMessage, args);
       } else throw new Error(`Error: Unknown command. Use \`${config.prefix}help\` for help.`);
     } catch (err) {
-      if (err.message !== "Failed: bomb exploded") {
-        if (err.message.indexOf("Error: ") == 0) {
-          receivedMessage.channel.send(
-            new Discord.MessageEmbed()
-            .setColor("#ff0000")
-            .setAuthor("Uh Oh...")
-            .setTitle(err.message.slice(7, err.message.length))
-          );
-        } else {
-          receivedMessage.channel.send(
-            new Discord.MessageEmbed()
-            .setColor("#ba0c08")
-            .setAuthor("FUCK!!")
-            .setTitle("A fault occured :sob: Please inform my developer")
-          );
-          console.error(err);
-        }
+      that.processReceivedError(err, receivedMessage.channel);
+    }
+  }
+
+  processInteractionCommand(receivedInteraction, config) {
+    if (this.loadedresources != TotalResources) return receivedMessage.channel.send("Please wait while I finish loading my resources");
+    var that = this;
+    try {
+      let commandScript = that.findCommand(receivedInteraction.commandName);
+      if (commandScript != null) {
+        if(commandScript.hasOwnProperty('interactionCommand')) return commandScript.interactionCommand(that, receivedInteraction);
+      } else throw new Error(`Error: Unknown command. Use \`${config.prefix}help\` for help or as an admin use \`${config.prefix}deploy\` to setup slash commands again.`);
+    } catch (err) {
+      that.processReceivedError(err, receivedInteraction.channel);
+    }
+  }
+
+  processReceivedError(err, outChannel) {
+    if (err.message !== "Failed: bomb exploded") {
+      if (err.message.indexOf("Error: ") == 0) {
+        outChannel.send({embeds:[
+          new Discord.MessageEmbed()
+          .setColor("#ff0000")
+          .setAuthor("Uh Oh...")
+          .setTitle(err.message.slice(7, err.message.length))
+        ]});
+      } else {
+        outChannel.send({embeds:[
+          new Discord.MessageEmbed()
+          .setColor("#ba0c08")
+          .setAuthor("FUCK!!")
+          .setTitle("A fault occured :sob: Please inform my developer")
+        ]});
+        console.error(err);
       }
     }
   }
@@ -275,7 +304,7 @@ class MinesweeperBot {
       `Run \`${config.prefix}start\` to create a new game`,
       `Run \`${config.prefix}help\` for more information`
     ].join('\n'));
-    receivedMessage.channel.send(embed);
+    receivedMessage.channel.send({embeds:[embed]});
   }
 
   getPerServerSettings(guildId) {

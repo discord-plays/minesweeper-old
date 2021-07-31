@@ -5,8 +5,10 @@ const CREDITS = require('./credits');
 const path = require("path");
 const fs = require("fs");
 const Discord = require("discord.js");
-const client = new Discord.Client();
-require('discord-buttons')(client);
+const client = new Discord.Client({
+  intents: [ Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.DIRECT_MESSAGES ],
+  partials: [ 'MESSAGE', 'CHANNEL', 'REACTION' ]
+});
 
 const MinesweeperBot = require("./game/Minesweeper");
 const myServer = require('./server');
@@ -68,6 +70,7 @@ var bot = null;
 client.on("ready", () => {
   console.log(`Discord Plays Minesweeper Bot ${jsonfile.version}`);
   console.log(`Do \`>credits\` to see the people who made this crazy bot`);
+  console.log(`Do \`>deploy guild\` to setup slash commands in the guild`);
   bot = new MinesweeperBot(client, myServer, options);
   bot.start();
 
@@ -75,26 +78,23 @@ client.on("ready", () => {
   myServer.sendBotData({tag: client.user.tag});
 });
 
-client.on("message", message => {
+client.on("messageCreate", message => {
   if (bot == null) return;
   if (message.guild == null && bot.menuController.waitingForInput(message.author)) return bot.menuController.sendInput(message);
 
   // Respond to messages for the server's prefix or the default if the server doesn't have settings or the text channel is in a DM
-  var config = bot.getPerServerSettings(message.guild == null ? ("dm-" + message.author.id) : message.guild.id.toString());
+  let config = bot.getPerServerSettings(message.guild == null ? ("dm-" + message.author.id) : message.guild.id.toString());
   if (message.mentions.has(client.user)) return bot.processPing(message, config);
-  if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) return bot.processCommand(message, config);
+  if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) return bot.processMessageCommand(message, config);
 });
 
-client.on('clickButton', button => {
-  bot.menuController.clickButton(button, button.clicker.user);
-});
-
-client.on("messageReactionAdd", (reaction, user) => {
-  bot.menuController.addReaction(reaction, user);
-});
-
-client.on("messageReactionRemove", (reaction, user) => {
-  bot.menuController.removeReaction(reaction, user);
+client.on("interactionCreate", interaction => {
+  if(interaction.isButton()) {
+    bot.menuController.clickButton(interaction, interaction.user);
+  } else if(interaction.isCommand()) {
+    let config = bot.getPerServerSettings(message.guild == null ? ("dm-" + message.author.id) : message.guild.id.toString());
+    bot.processInteractionCommand(interaction, config);
+  }
 });
 
 // login stuffs

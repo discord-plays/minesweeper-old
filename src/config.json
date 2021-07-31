@@ -3,8 +3,9 @@
   "logoQuestion": "https://software.onpointcoding.net/discord-plays-minesweeper/assets/question_mark.png",
   "status": {
     "presence": "playing",
-    "activity": "{{total-games}} {{label-games}} of minesweeper"
+    "activity": "{{total-games}} {{label-games}} of minesweeper {{sad-emoji}}"
   },
   "github": "https://github.com/discord-plays-minesweeper/bot",
-  "version": "v2.0"
+  "version": "v2.0",
+  "ownerId": "222344019458392065"
 }

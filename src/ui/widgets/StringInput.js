@@ -1,4 +1,4 @@
-const { MessageButton } = require("discord-buttons");
+const { MessageActionRow, MessageButton, Constants } = require('discord.js');
 const BaseInput = require("../BaseInput");
 const { BUTTON_PENCIL } = require("../EmojiButtons");
 
@@ -20,6 +20,7 @@ class StringInput extends BaseInput {
 
   sendInput(text) {
     this.value = text;
+    if(this.acceptingInput!=null) this.acceptingInput.delete().then(()=>{}).catch(()=>{});
     this.menu.changeWidget(this);
     this.triggerCallback();
   }
@@ -27,30 +28,30 @@ class StringInput extends BaseInput {
   generateOptionButtons() {
     return [new MessageButton()
       .setLabel("Edit")
-      .setStyle("green")
+      .setStyle(Constants.MessageButtonStyles.SUCCESS)
       .setEmoji("📝")
-      .setID(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil`)
+      .setCustomId(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil`)
     ];
   }
 
   clickButton(button) {
     let $t = this;
-    if(button.id == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil`) {
-      button.defer();
+    if(button.customId == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil`) {
+      button.deferUpdate();
       $t.controller.sent.push({message:$t.message,input:$t,user:$t.menu.user,type:'string'});
 
       let undoButton = new MessageButton()
         .setLabel("Cancel")
-        .setStyle("red")
+        .setStyle(Constants.MessageButtonStyles.DANGER)
         .setEmoji("❎")
-        .setID(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil_cancel`);
-      $t.message.channel.send('Input your text after the tone (***beep***):',{component:undoButton}).then(x=>{
+        .setCustomId(`${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil_cancel`);
+      $t.message.channel.send({content:'Input your text after the tone (***beep***):',components:[new MessageActionRow().addComponents(undoButton)]}).then(x=>{
         this.acceptingInput=x;
-        $t.controller.sent.push({message:x,input:$t,user:$t.menu.user,type:'message-button'});
+        $t.controller.addTrigger(x,$t,$t.menu.user,'message-button');
       }).catch(()=>{});
       return;
-    } else if(button.id == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil_cancel`) {
-      button.defer();
+    } else if(button.customId == `${this.menu.name.toLowerCase()}_${this.name.toLowerCase()}_pencil_cancel`) {
+      button.deferUpdate();
       if(this.acceptingInput!=null)this.acceptingInput.delete().then(()=>{}).catch(()=>{});
       this.menu.changeWidget(this);
       return;

@@ -2,7 +2,8 @@ const Jimp = require('jimp');
 const path = require('path');
 
 class LoadedTexturepack {
-  constructor(texturepath) {
+  constructor(basedir, texturepath) {
+    this.basedir = basedir;
     this.texturepath = texturepath == "%%default%%" ? "mods/$$/assets" : texturepath;
     this.cached = {};
   }
@@ -14,10 +15,8 @@ class LoadedTexturepack {
    */
   async getTexture(a) {
     if(this.cached.hasOwnProperty(a)) return this.cached[a];
-    let b = path.join(this.texturepath.replace('$$',a.split('/')[0]),`${a}.png`);
-    console.log(b);
+    let b = path.join(this.basedir,this.texturepath.replace('$$',a.split('/')[0]),`${a}.png`);
     this.cached[a] = await Jimp.read(b);
-    console.log('Finished jimp.read');
     return this.cached[a];
   }
 

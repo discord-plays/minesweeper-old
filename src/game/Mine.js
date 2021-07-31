@@ -1,11 +1,19 @@
 class Mine {
   constructor(id, name, priority) {
     this.id = id;
+    this.alias = [name];
     this.name = name;
     this.priority = priority;
     
     // A reference to the mod which is set when adding the mine to the pool
     this.mod;
+  }
+
+  /*
+   * Returns all values in alias after running toLowerCase() on each of them
+   */
+  getAlias() {
+    return this.alias.map(x=>x.toString().toLowerCase());
   }
 
   /*
