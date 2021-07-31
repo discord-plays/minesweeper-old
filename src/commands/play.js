@@ -1,7 +1,12 @@
-const startCommand = require('./start').command;
+const { messageCommand, interactionCommand } = require('./start');
 
-function playCommand(bot, msg, args) {
-  startCommand(bot, msg, args);
+function playMessage(bot, msg, args = []) {
+  if (args.length > 0) return bot.sendInvalidOptions("play", msg);
+  messageCommand(bot, msg, args);
+}
+
+function playInteraction(bot, interaction) {
+  interactionCommand(bot, interaction);
 }
 
 var helpExample = [
@@ -13,7 +18,8 @@ var helpText = [
 ];
 
 module.exports = {
-  command: playCommand,
+  messageCommand: playMessage,
+  interactionCommand: playInteraction,
   help: helpText,
   example: helpExample
 };

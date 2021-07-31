@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
 
 function pineappleCommand(bot, msg, args = []) {
-  msg.channel.send(new Discord.MessageEmbed()
-    .setDescription(":pineapple:"));
+  if (args.length > 0) return bot.sendInvalidOptions("pineapple", msg);
+  msg.channel.send({embeds:[new Discord.MessageEmbed().setDescription(":pineapple:")]});
 }
 
 var helpExample = [
@@ -14,7 +14,7 @@ var helpText = [
 ];
 
 module.exports = {
-  command: pineappleCommand,
+  messageCommand: pineappleCommand,
   help: helpText,
   isHidden: true,
   example: helpExample

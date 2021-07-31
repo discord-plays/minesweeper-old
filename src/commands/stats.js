@@ -1,8 +1,19 @@
 const Discord = require("discord.js");
 
-function statsCommand(bot, msg, args = []) {
-  msg.channel.send(new Discord.MessageEmbed()
-    .setDescription("this is a WIP")); //TODO: literally everything to do with saving leaderboards and stats 
+function statsCommand(bot, outChannel) {
+  outChannel.send({embeds:[
+    new Discord.MessageEmbed()
+    .setDescription("this is a WIP") //TODO: literally everything to do with saving leaderboards and stats 
+  ]});
+}
+
+function statsMessage(bot, msg, args = []) {
+  if (args.length > 0) return bot.sendInvalidOptions("play", msg);
+  statsCommand(bot, msg.channel);
+}
+
+function statsInteraction(bot, interaction) {
+  statsCommand(bot, interaction.channel);
 }
 
 /**
@@ -22,7 +33,7 @@ function statsCommand(bot, msg, args = []) {
 
 var helpExample = [
   "`>stats global`",
-  "`>stats server`"
+  "`>stats guild`"
 ];
 
 var helpText = [
@@ -30,7 +41,8 @@ var helpText = [
 ];
 
 module.exports = {
-  command: statsCommand,
+  messageCommand: statsMessage,
+  interactionCommand: statsInteraction,
   help: helpText,
   example: helpExample
 };

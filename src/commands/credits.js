@@ -1,12 +1,21 @@
 const Discord = require("discord.js");
 
-function creditsCommand(bot, msg, args = []) {
+function creditsCommand(bot, outChannel) {
   var embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
     .setTitle("Credits")
     .addFields(bot.CREDITS);
-  msg.channel.send(embed);
+  outChannel.send({embeds:[embed]});
+}
+
+function creditsMessage(bot, msg, args = []) {
+  if (args.length > 0) return bot.sendInvalidOptions("credits", msg);
+  creditsCommand(bot, msg.channel);
+}
+
+function creditsInteraction(bot, interaction) {
+  creditsCommand(bot, interaction.channel);
 }
 
 var helpExample = [
@@ -18,7 +27,8 @@ var helpText = [
 ];
 
 module.exports = {
-  command: creditsCommand,
+  messageCommand: creditsMessage,
+  interactionCommand: creditsInteraction,
   help: helpText,
   example: helpExample
 };

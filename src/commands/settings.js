@@ -1,16 +1,11 @@
 const { Permissions } = require('discord.js');
 
-function settingsCommand(bot, msg, args = []) {
-  if (args.length > 0) {
-    return bot.sendInvalidOptions("settings", msg);
-  }
-
-  if(msg.guild===null) {
+function settingsCommand(bot, outGuild, outChannel, author, member) {
+  if(outGuild===null) {
     // User settings menu
-    let author = msg.author;
     author.createDM().then(dm=>{
       // Test UI as user menu isn't ready yet
-      let menu = bot.menuController.createMenu(msg.author);
+      let menu = bot.menuController.createMenu(author);
       menu.name = "User Settings";
       menu.color = 0x0099ff;
       menu.description = "This is a test description xD";
@@ -44,13 +39,11 @@ function settingsCommand(bot, msg, args = []) {
     })
   } else {
     // Server settings menu
-    let author = msg.author;
-    let member = msg.member;
-    let guildId = msg.guild.id;
-    if(member.hasPermission(Permissions.FLAGS.MANAGE_GUILD)) {
+    let guildId = outGuild.id;
+    if(member.permissions.has(Permissions.FLAGS.MANAGE_GUILD, true)) {
       author.createDM().then(dm=>{
         let menu = bot.menuController.createMenu(author);
-        menu.name = `Server Settings (${msg.guild.name})`;
+        menu.name = `Server Settings (${outGuild.name})`;
         menu.color = 0xff9900;
         menu.description = "Edit the settings for a server";
 
@@ -65,30 +58,39 @@ function settingsCommand(bot, msg, args = []) {
       });
     } else {
       author.createDM().then(dm=>{
-        dm.channel.send(
+        dm.channel.send({embeds:[
           new Discord.MessageEmbed()
           .setColor("#ff0000")
           .setAuthor("Uh Oh...")
           .setTitle('You don\'t have permission to edit these server settings')
-        );
+        ]});
       })
     }
   }
 }
 
 function changeSettings(bot, member, dm, guildId, f, v) {
-  if(member.hasPermission(Permissions.FLAGS.MANAGE_GUILD)) {
+  if(member.permissions.has(Permissions.FLAGS.MANAGE_GUILD, true)) {
     let s=bot.getPerServerSettings(guildId);
     s[f]=v.replace(/[`\\@#:]/g,'_');
     bot.setPerServerSettings(guildId,s);
   } else {
-    dm.channel.send(
+    dm.channel.send({embeds:[
       new Discord.MessageEmbed()
       .setColor("#ff0000")
       .setAuthor("Uh Oh...")
       .setTitle('You don\'t have permission to edit these server settings')
-    );
+    ]});
   }
+}
+
+function settingsMessage(bot, msg, args = []) {
+  if (args.length > 0) return bot.sendInvalidOptions("settings", msg);
+  settingsCommand(bot, msg.guild, msg.channel, msg.author, msg.member);
+}
+
+function settingsInteraction(bot, interaction) {
+  settingsCommand(bot, interaction.guild, interaction.channel, interaction.user, interaction.member);
 }
 
 var helpExample = [
@@ -99,7 +101,8 @@ var helpText = [
 ];
 
 module.exports = {
-  command: settingsCommand,
+  messageCommand: settingsMessage,
+  interactionCommand: settingsInteraction,
   help: helpText,
   example: helpExample
 };
