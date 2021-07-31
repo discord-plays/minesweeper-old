@@ -3,6 +3,7 @@ const Mine = require('../../game/Mine');
 class NumberAddMine extends Mine {
   constructor(name, value) {
     super("number-"+value, name, 0);
+    this.alias = [name, value];
     this.value = value;
   }
 
