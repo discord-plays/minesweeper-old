@@ -257,7 +257,13 @@ class MinesweeperBot {
         if (commandScript.hasOwnProperty('messageCommand')) return commandScript.messageCommand(that, receivedMessage, args);
       } else throw new Error(`Error: Unknown command. Use \`${config.prefix}help\` for help.`);
     } catch (err) {
-      that.processReceivedError(err, receivedMessage);
+      // Process the error
+      if(that.processReceivedError(err, receivedMessage)) {
+        // Swap hadError flag
+        [guildId, channelId] = [receivedMessage.guild == null ? "dm" : receivedMessage.guild.id, receivedMessage.channel.id];
+        let boardId = guildId + "-" + channelId;
+        if (that.isBoard(boardId)) that.getBoard(boardId).hadError = true;
+      }
     }
   }
 
@@ -270,7 +276,13 @@ class MinesweeperBot {
         if(commandScript.hasOwnProperty('interactionCommand')) return commandScript.interactionCommand(that, receivedInteraction);
       } else throw new Error(`Error: Unknown command. Use \`${config.prefix}help\` for help or as an admin use \`${config.prefix}deploy\` to setup slash commands again.`);
     } catch (err) {
-      that.processReceivedError(err, receivedInteraction);
+      // Process the error
+      if(that.processReceivedError(err, receivedInteraction)) {
+        // Swap hadError flag
+        [guildId, channelId] = [receivedInteraction.guild == null ? "dm" : receivedInteraction.guild.id, receivedInteraction.channel.id];
+        let boardId = guildId + "-" + channelId;
+        if (that.isBoard(boardId)) that.getBoard(boardId).hadError = true;
+      }
     }
   }
 
@@ -279,7 +291,7 @@ class MinesweeperBot {
       if (err.message.indexOf("Error: ") == 0) {
         replyFunc.reply({embeds:[
           new Discord.MessageEmbed()
-          .setColor("#ff0000")
+          .setColor("#ba0c08")
           .setAuthor("Uh Oh there was an issue:")
           .setTitle(err.message.slice(7, err.message.length))
         ]});
@@ -289,14 +301,17 @@ class MinesweeperBot {
           .setColor("#ba0c08")
           .setAuthor("Oops!!")
           .setTitle("A fault occured :sob: Please inform my developer")
+          .setDescription("Use the kill command to remove the current board so you can start a new game")
         ]});
         console.error("==================================");
         console.error("Fuck a fault occured");
         console.error("----------------------------------");
         console.error(err);
         console.error("==================================");
+        return true;
       }
     }
+    return false;
   }
 
   processPing(outChannel, config) {

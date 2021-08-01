@@ -126,7 +126,7 @@ class LoadedTexturepack {
    * @returns Jimp image
    */
   async getMiniBorderNumber(n) {
-    if(n >= 1 && n < 10) return await this.getTexture('discordplaysminesweeper.base/border/small-number/'+n);
+    if(n >= 0 && n < 10) return await this.getTexture('discordplaysminesweeper.base/border/small-number/'+n);
     return null;
   }
 

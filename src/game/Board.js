@@ -21,6 +21,7 @@ class MinesweeperBoard {
     this.won = false;
     this.exploded = false;
     this.cached = null;
+    this.hadError = false;
 
     for (var i = 0; i < this.width; i++)
       for (var j = 0; j < this.height; j++)
@@ -109,7 +110,7 @@ class MinesweeperBoard {
         }
         for (var y = 0; y < $t.height; y++) {
           var numberIcon = await textures.getBorder(y + 1);
-          if (numberIcon == null) numberIcon = textures.getDebugTile();
+          if (numberIcon == null) numberIcon = textures.getDebugPinkBlack();
           var numberPosition = (1 + y) * 16;
           baseimg.composite(numberIcon, 0, numberPosition);
           baseimg.composite(numberIcon, borderRightEdge, numberPosition);
