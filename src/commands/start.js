@@ -17,7 +17,12 @@ function startCommand(bot, replyFunc, outChannel, author) {
 
 function startMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("start", msg);
-  startCommand(bot, msg, msg.channel, msg.author);
+  startCommand(bot, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }}, msg.channel, msg.author);
 }
 
 function startInteraction(bot, interaction) {

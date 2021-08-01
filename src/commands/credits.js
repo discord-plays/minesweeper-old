@@ -12,7 +12,12 @@ function creditsCommand(bot, replyFunc) {
 
 function creditsMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("credits", msg);
-  creditsCommand(bot, msg);
+  creditsCommand(bot, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }});
 }
 
 function creditsInteraction(bot, interaction) {

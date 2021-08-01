@@ -90,7 +90,12 @@ function changeSettings(bot, member, dm, guildId, f, v) {
 
 function settingsMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("settings", msg);
-  settingsCommand(bot, msg, msg.guild, msg.author, msg.member);
+  settingsCommand(bot, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }}, msg.guild, msg.author, msg.member);
 }
 
 function settingsInteraction(bot, interaction) {

@@ -9,7 +9,12 @@ function statsCommand(bot, replyFunc) {
 
 function statsMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("play", msg);
-  statsCommand(bot, msg);
+  statsCommand(bot, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }});
 }
 
 function statsInteraction(bot, interaction) {

@@ -1,23 +1,23 @@
-function pineappleCommand(bot, msg, args = []) {
-  if (args.length > 0) return bot.sendInvalidOptions("pineapple", msg);
+function appleCommand(bot, msg, args = []) {
+  if (args.length > 0) return bot.sendInvalidOptions("apple", msg);
   ({reply:a=>{
     if(typeof(a)==="string") a = {content:a};
     if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
     a.allowedMentions.repliedUser = false;
     return msg.reply(a);
-  }}).reply(":pineapple:");
+  }}).reply(":apple:");
 }
 
 var helpExample = [
-  "`>pineapple`"
+  "`>apple`"
 ];
 
 var helpText = [
-  "Summon pineapple emoji"
+  "Summon apple emoji"
 ];
 
 module.exports = {
-  messageCommand: pineappleCommand,
+  messageCommand: appleCommand,
   help: helpText,
   isHidden: true,
   example: helpExample

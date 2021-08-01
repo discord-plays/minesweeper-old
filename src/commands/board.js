@@ -10,7 +10,12 @@ function boardCommand(bot, guildId, channelId, replyFunc) {
 function boardMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("board", msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  boardCommand(bot, guildId, channelId, msg);
+  boardCommand(bot, guildId, channelId, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }});
 }
 
 function boardInteraction(bot, interaction) {

@@ -20,7 +20,12 @@ function statusCommand(bot, replyFunc) {
 
 function statusMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("status", msg);
-  statusCommand(bot, msg);
+  statusCommand(bot, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }});
 }
 
 function statusInteraction(bot, interaction) {

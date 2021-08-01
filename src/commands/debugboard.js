@@ -19,7 +19,12 @@ function debugboardCommand(bot, msg, args = []) {
       while(v.length>0) {
         let z=v.substr(0,2000);
         v=v.substr(2000,v.length-1);
-        msg.reply(z);
+        ({reply:a=>{
+          if(typeof(a)==="string") a = {content:a};
+          if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+          a.allowedMentions.repliedUser = false;
+          return msg.reply(a);
+        }}).reply(z);
       }
     })();
   }

@@ -50,7 +50,12 @@ function generateGeneralHelpText(bot, guildId) {
 function helpMessage(bot, msg, args = []) {
   if (args.length > 1) return bot.sendInvalidOptions('help', msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  helpCommand(bot, guildId, msg, args.length==1?args[0]:null);
+  helpCommand(bot, guildId, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }}, args.length==1?args[0]:null);
 }
 
 function helpInteraction(bot, interaction) {

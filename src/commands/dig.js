@@ -28,7 +28,12 @@ function digCommand(bot, guildId, channelId, replyFunc, args) {
 function digMessage(bot, msg, args = []) {
   if (args.length < 1) return bot.sendInvalidOptions('dig', msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  digCommand(bot, guildId, channelId, msg, args);
+  digCommand(bot, guildId, channelId, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }}, args);
 }
 
 function digInteraction(bot, interaction) {

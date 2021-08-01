@@ -5,13 +5,18 @@ function pingCommand(bot, replyFunc) {
     new Discord.MessageEmbed()
       .setColor("#d9a6a7")
       .setAuthor("Discord Plays Minesweeper", bot.jsonfile.logoQuestion)
-      .setTitle(`Pong (${Math.floor(bot.client.ws.ping)}ms heartbeat)`)
+      .setTitle(`Pong! (${Math.floor(bot.client.ws.ping)}ms heartbeat)`)
   ]});
 }
 
 function pingMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("play", msg);
-  pingCommand(bot, msg);
+  pingCommand(bot, {reply:a=>{
+    if(typeof(a)==="string") a = {content:a};
+    if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
+    a.allowedMentions.repliedUser = false;
+    return msg.reply(a);
+  }});
 }
 
 function pingInteraction(bot, interaction) {
