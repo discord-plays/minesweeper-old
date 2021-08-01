@@ -9,7 +9,7 @@ if [ $# = 1 ] || [ $# = 2 ]; then
   echo "Method: $method"
   node -e "$method"
   if [ -f "$tex" ]; then
-    num="256"
+    num="16"
     if [ $# = 2 ]; then
       num="$2"
     fi
