@@ -1,21 +1,21 @@
 const Discord = require("discord.js");
 
-function helpCommand(bot, msg, args = []) {
-  var settings = bot.getPerServerSettings(msg.guild == null ? "dm" : msg.guild.id);
+function helpCommand(bot, guildId, replyFunc, cmd) {
+  var settings = bot.getPerServerSettings(guildId);
 
   // if there are no args then null will be the 0th item in the array
-  var command = [...args, null][0];
   var embed = null;
   var arr = null;
   var exArr = [];
-  if (command != null) {
-    var commandScript = bot.findCommand(command);
-    if (commandScript == null) throw new Error(`Error: command \`${command}\` doesn't exist`);
+  if (cmd != null) {
+    console.log(cmd);
+    var commandScript = bot.findCommand(cmd);
+    if (commandScript == null) throw new Error(`Error: Command \`${cmd}\` doesn't exist`);
     else if (commandScript.hasOwnProperty("help")) {
       let isHidden = commandScript.hasOwnProperty("isHidden") && commandScript.isHidden;
       let onlyDebug = commandScript.hasOwnProperty("debugOnly") && commandScript.debugOnly;
 
-      if (isHidden || (!bot.DEBUG && onlyDebug)) throw new Error(`Error: command \`${command}\` doesn't exist`);
+      if (isHidden || (!bot.DEBUG && onlyDebug)) throw new Error(`Error: Command \`${cmd}\` doesn't exist`);
 
       arr = commandScript.help;
       if (commandScript.hasOwnProperty("example")) {
@@ -27,13 +27,13 @@ function helpCommand(bot, msg, args = []) {
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
     .setTitle(arr == null ? "General help" : "Help: " + command)
-    .setDescription(arr == null ? generateGeneralHelpText(bot, msg).join("\n") : arr.join('\n'));
+    .setDescription(arr == null ? generateGeneralHelpText(bot, guildId).join("\n") : arr.join('\n'));
   if (exArr.length != 0) embed.addField(`Example${exArr.length==1?"":"s"}`, exArr.join('\n'));
-  msg.channel.send(embed);
+  replyFunc.reply({embeds:[embed]});
 }
 
-function generateGeneralHelpText(bot, msg) {
-  var settings = bot.getPerServerSettings(msg.guild == null ? "dm" : msg.guild.id);
+function generateGeneralHelpText(bot, guildId) {
+  var settings = bot.getPerServerSettings(guildId);
   var commandNames = bot.__commandslist.commands.map(x => bot.__commandslist.getCommandName(x));
   var commandDetails = [];
   for (var i = 0; i < commandNames.length; i++) {
@@ -47,6 +47,18 @@ function generateGeneralHelpText(bot, msg) {
   return commandDetails;
 }
 
+function helpMessage(bot, msg, args = []) {
+  if (args.length > 1) return bot.sendInvalidOptions('help', msg);
+  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+  helpCommand(bot, guildId, msg, args.length==1?args[0]:null);
+}
+
+function helpInteraction(bot, interaction) {
+  [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
+  let cmd=interaction.options.getString("command");
+  helpCommand(bot, guildId, interaction, cmd);
+}
+
 var helpExample = [
   "`>help`",
   "`>help <command>`",
@@ -54,11 +66,18 @@ var helpExample = [
   "`>help settings`"
 ];
 var helpText = [
-  "Maybe this command opens the help text?"
+  "\"Help Help! Help Help! Over Here! Thank you very much!\""
 ];
+var helpOptions = [{
+  name: 'command',
+  type: 'STRING',
+  description: 'The command get help with'
+}];
 
 module.exports = {
-  command: helpCommand,
+  messageCommand: helpMessage,
+  interactionCommand: helpInteraction,
   help: helpText,
-  example: helpExample
+  example: helpExample,
+  options: helpOptions
 };

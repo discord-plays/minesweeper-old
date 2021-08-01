@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
-function statsCommand(bot, outChannel) {
-  outChannel.send({embeds:[
+function statsCommand(bot, replyFunc) {
+  replyFunc.reply({embeds:[
     new Discord.MessageEmbed()
     .setDescription("this is a WIP") //TODO: literally everything to do with saving leaderboards and stats 
   ]});
@@ -9,11 +9,11 @@ function statsCommand(bot, outChannel) {
 
 function statsMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("play", msg);
-  statsCommand(bot, msg.channel);
+  statsCommand(bot, msg);
 }
 
 function statsInteraction(bot, interaction) {
-  statsCommand(bot, interaction.channel);
+  statsCommand(bot, interaction);
 }
 
 /**
@@ -43,6 +43,7 @@ var helpText = [
 module.exports = {
   messageCommand: statsMessage,
   interactionCommand: statsInteraction,
+  isHidden: true,
   help: helpText,
   example: helpExample
 };

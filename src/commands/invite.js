@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 
-function inviteCommand(bot, outChannel) {
+function inviteCommand(bot, replyFunc) {
   let invite = bot.client.generateInvite({
     scopes: ['bot'],
     permissions: [
@@ -17,16 +17,16 @@ function inviteCommand(bot, outChannel) {
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
     .setTitle("Invite Link")
     .setDescription(`[Invite @${bot.client.user.tag}](${invite})`);
-  outChannel.send({embeds:[embed]});
+  replyFunc.reply({embeds:[embed]});
 }
 
 function inviteMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("invite", msg);
-  inviteCommand(bot, msg.channel);
+  inviteCommand(bot, msg);
 }
 
 function inviteInteraction(bot, interaction) {
-  inviteCommand(bot, interaction.channel);
+  inviteCommand(bot, interaction);
 }
 
 var helpExample = [

@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const address = require('../address');
 
-function startCommand(bot, outChannel, author) {
+function startCommand(bot, replyFunc, outChannel, author) {
   bot.web.updateUserLastChannel(author, outChannel);
   var embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
@@ -12,16 +12,16 @@ function startCommand(bot, outChannel, author) {
       'If you already have the board creation page open in your browser you can just refresh it instead of opening the page again',
       'Disclaimer: You are required to login using your Discord account. If you are already logged in you can just press authorize to allow Discord Plays Minesweeper to know who you are.'
     ].join('\n'));
-  outChannel.send({embeds:[embed]});
+    replyFunc.reply({embeds:[embed]});
 }
 
 function startMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("start", msg);
-  startCommand(bot, msg.channel, msg.author);
+  startCommand(bot, msg, msg.channel, msg.author);
 }
 
 function startInteraction(bot, interaction) {
-  startCommand(bot, interaction.channel, interaction.user);
+  startCommand(bot, interaction, interaction.channel, interaction.user);
 }
 
 var helpExample = [

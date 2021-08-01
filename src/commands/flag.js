@@ -1,8 +1,4 @@
-function flagCommand(bot, msg, args, _a = true) {
-  if (args.length < 1) {
-    return bot.sendInvalidOptions('flag', msg);
-  }
-  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+function flagCommand(bot, msg, args) {
   var boardId = guildId + "-" + channelId;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
@@ -11,7 +7,11 @@ function flagCommand(bot, msg, args, _a = true) {
     try {
       currentFlag = board.flagHashToIndex(firstItem);
     } catch (err) {
-      throw new Error(`Error: Flag \`${firstItem}\` is invalid, command execution stopped!`);
+      let o = Object.keys(board.totalMineCounts);
+      if(o.length == 1) {
+        currentFlag = bot.getFlagById(o[0]);
+        args.splice(0,0,firstItem);
+      } else throw new Error(`Error: Flag \`${firstItem}\` is invalid, command execution stopped!`);
     }
     for (var i = 0; i < args.length; i++) {
       if (args[i] === null) continue;
@@ -34,10 +34,22 @@ function flagCommand(bot, msg, args, _a = true) {
         cell.visible = cell.flagged;
       }
     }
-    board.displayBoard();
+    board.displayBoard(replyFunc);
   } else {
-    return bot.sendMissingGame(msg);
+    return bot.sendMissingGame(replyFunc, guildId);
   }
+}
+
+function flagMessage(bot, msg, args = []) {
+  if (args.length < 1) return bot.sendInvalidOptions('flag', msg);
+  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+  flagCommand(bot, guildId, channelId, msg, args);
+}
+
+function flagInteraction(bot, interaction) {
+  [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
+  let data=interaction.options.getString("data").split(' ');
+  flagCommand(bot, guildId, channelId, interaction, data);
 }
 
 var helpExample = [
@@ -48,9 +60,17 @@ var helpExample = [
 var helpText = [
   "Flag a cell in the current board"
 ];
+var flagOptions = [{
+  name: 'data',
+  type: 'STRING',
+  description: 'The type of flag and cells to flag (e.g. &1 A1 B2 C3 or &double B3 C2)',
+  required: true
+}];
 
 module.exports = {
-  command: flagCommand,
+  messageCommand: flagMessage,
+  interactionCommand: flagInteraction,
   help: helpText,
-  example: helpExample
+  example: helpExample,
+  options: flagOptions
 };

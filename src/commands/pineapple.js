@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 
 function pineappleCommand(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("pineapple", msg);
-  msg.channel.send({embeds:[new Discord.MessageEmbed().setDescription(":pineapple:")]});
+  msg.reply(":pineapple:");
 }
 
 var helpExample = [

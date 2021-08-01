@@ -1,8 +1,4 @@
-function digCommand(bot, msg, args, _a = true) {
-  if (args.length < 1) {
-    return bot.sendInvalidOptions('dig', msg);
-  }
-  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+function digCommand(bot, guildId, channelId, replyFunc, args) {
   var boardId = guildId + "-" + channelId;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
@@ -19,14 +15,26 @@ function digCommand(bot, msg, args, _a = true) {
       if (cell.visible) continue;
       if (cell.mine != 0) {
         cell.visible = true;
-        return board.bombExplode();
+        return board.bombExplode(replyFunc);
       }
       board.floodFill(cellPos.col, cellPos.row);
     }
-    if (!board.detectWin()) board.displayBoard();
+    board.detectWin(replyFunc);
   } else {
-    return bot.sendMissingGame(msg);
+    return bot.sendMissingGame(replyFunc, guildId);
   }
+}
+
+function digMessage(bot, msg, args = []) {
+  if (args.length < 1) return bot.sendInvalidOptions('dig', msg);
+  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
+  digCommand(bot, guildId, channelId, msg, args);
+}
+
+function digInteraction(bot, interaction) {
+  [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
+  let data=interaction.options.getString("data").split(' ');
+  digCommand(bot, guildId, channelId, interaction, data);
 }
 
 var helpExample = [
@@ -37,9 +45,17 @@ var helpExample = [
 var helpText = [
   "Dig a cell in the current board"
 ];
+var digOptions = [{
+  name: 'data',
+  type: 'STRING',
+  description: 'The cells to dig (e.g. A1 B2 C3)',
+  required: true
+}];
 
 module.exports = {
-  command: digCommand,
+  messageCommand: digMessage,
+  interactionCommand: digInteraction,
   help: helpText,
-  example: helpExample
+  example: helpExample,
+  options: digOptions
 };

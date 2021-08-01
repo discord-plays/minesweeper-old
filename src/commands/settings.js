@@ -1,6 +1,10 @@
-const { Permissions } = require('discord.js');
+const { Permissions, MessageEmbed } = require('discord.js');
 
-function settingsCommand(bot, outGuild, outChannel, author, member) {
+function settingsCommand(bot, replyFunc, outGuild, author, member) {
+  replyFunc.reply({embeds:[new MessageEmbed()
+    .setColor("#cc8800")
+    .setTitle("Sending you more details in your DMs")
+  ]});
   if(outGuild===null) {
     // User settings menu
     author.createDM().then(dm=>{
@@ -75,7 +79,7 @@ function changeSettings(bot, member, dm, guildId, f, v) {
     s[f]=v.replace(/[`\\@#:]/g,'_');
     bot.setPerServerSettings(guildId,s);
   } else {
-    dm.channel.send({embeds:[
+    dm.send({embeds:[
       new Discord.MessageEmbed()
       .setColor("#ff0000")
       .setAuthor("Uh Oh...")
@@ -86,11 +90,11 @@ function changeSettings(bot, member, dm, guildId, f, v) {
 
 function settingsMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("settings", msg);
-  settingsCommand(bot, msg.guild, msg.channel, msg.author, msg.member);
+  settingsCommand(bot, msg, msg.guild, msg.author, msg.member);
 }
 
 function settingsInteraction(bot, interaction) {
-  settingsCommand(bot, interaction.guild, interaction.channel, interaction.user, interaction.member);
+  settingsCommand(bot, interaction, interaction.guild, interaction.user, interaction.member);
 }
 
 var helpExample = [

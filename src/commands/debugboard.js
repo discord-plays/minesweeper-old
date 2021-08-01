@@ -1,4 +1,7 @@
-function debugboardCommand(bot, guildId, channelId) {
+function debugboardCommand(bot, msg, args = []) {
+  if (!bot.DEBUG) return;
+  if (args.length > 0) return bot.sendInvalidOptions("debugboard", msg);
+  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
   var boardId = guildId + "-" + channelId;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
@@ -16,8 +19,7 @@ function debugboardCommand(bot, guildId, channelId) {
       while(v.length>0) {
         let z=v.substr(0,2000);
         v=v.substr(2000,v.length-1);
-        let chan = await board.getChannel();
-        chan.send(z);
+        msg.reply(z);
       }
     })();
   }
@@ -25,20 +27,6 @@ function debugboardCommand(bot, guildId, channelId) {
 
 function fancyPrint(i, j, cell) {
   return `X: ${i} Y: ${j} Mine: ${cell.mine} Flag: ${cell.flag} Number: ${cell.number} Visible: ${cell.visible}`;
-}
-
-function debugboardMessage(bot, msg, args = []) {
-  if (!bot.DEBUG) return;
-  if (args.length > 0) return bot.sendInvalidOptions("debugboard", msg);
-  [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  debugboardCommand(bot, guildId, channelId);
-}
-
-function debugboardInteraction(bot, interaction) {
-  if (!bot.DEBUG) return;
-  if (args.length > 0) return bot.sendInvalidOptions("debugboard", msg);
-  [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
-  debugboardCommand(bot, guildId, channelId);
 }
 
 var helpExample = [
@@ -50,8 +38,7 @@ var helpText = [
 ];
 
 module.exports = {
-  messageCommand: debugboardMessage,
-  interactionCommand: debugboardInteraction,
+  messageCommand: debugboardCommand,
   debugOnly: true,
   help: helpText,
   example: helpExample
