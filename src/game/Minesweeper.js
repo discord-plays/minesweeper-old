@@ -94,7 +94,7 @@ class MinesweeperBot {
     this.__flags[mod.id].push(mine);
   }
 
-  startGame(channel, j) {
+  startGame(channel, j, replyFunc) {
     // get the guild and channel ids
     let guildId, channelId;
     [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
@@ -128,7 +128,7 @@ class MinesweeperBot {
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
-    board.displayBoard();
+    board.displayBoard({reply:(...x)=>channel.send(...x)});
   }
 
   getMine(ref) {
@@ -208,12 +208,12 @@ class MinesweeperBot {
 
   sendInvalidOptions(command, msg) {
     var settings = this.getPerServerSettings(msg.guild == null ? "dm" : msg.guild.id);
-    throw new Error(`Error: Invalid options. Use \`${settings.prefix}help ${command}\` for help.`);
+    this.processReceivedError(new Error(`Error: Invalid options. Use \`${settings.prefix}help ${command}\` for help.`), msg);
   }
 
-  sendMissingGame(msg) {
-    var settings = this.getPerServerSettings(msg.guild == null ? "dm" : msg.guild.id);
-    throw new Error(`Error: There is no game running in this channel. Learn how to start one in \`${settings.prefix}help\``);
+  sendMissingGame(replyFunc, guildId) {
+    var settings = this.getPerServerSettings(guildId);
+    this.processReceivedError(new Error(`Error: There is no game running in this channel. Learn how to start one in \`${settings.prefix}help\``), replyFunc);
   }
 
   getAllCommands() {
@@ -257,7 +257,7 @@ class MinesweeperBot {
         if (commandScript.hasOwnProperty('messageCommand')) return commandScript.messageCommand(that, receivedMessage, args);
       } else throw new Error(`Error: Unknown command. Use \`${config.prefix}help\` for help.`);
     } catch (err) {
-      that.processReceivedError(err, receivedMessage.channel);
+      that.processReceivedError(err, receivedMessage);
     }
   }
 
@@ -270,32 +270,36 @@ class MinesweeperBot {
         if(commandScript.hasOwnProperty('interactionCommand')) return commandScript.interactionCommand(that, receivedInteraction);
       } else throw new Error(`Error: Unknown command. Use \`${config.prefix}help\` for help or as an admin use \`${config.prefix}deploy\` to setup slash commands again.`);
     } catch (err) {
-      that.processReceivedError(err, receivedInteraction.channel);
+      that.processReceivedError(err, receivedInteraction);
     }
   }
 
-  processReceivedError(err, outChannel) {
+  processReceivedError(err, replyFunc) {
     if (err.message !== "Failed: bomb exploded") {
       if (err.message.indexOf("Error: ") == 0) {
-        outChannel.send({embeds:[
+        replyFunc.reply({embeds:[
           new Discord.MessageEmbed()
           .setColor("#ff0000")
-          .setAuthor("Uh Oh...")
+          .setAuthor("Uh Oh there was an issue:")
           .setTitle(err.message.slice(7, err.message.length))
         ]});
       } else {
-        outChannel.send({embeds:[
+        replyFunc.reply({embeds:[
           new Discord.MessageEmbed()
           .setColor("#ba0c08")
-          .setAuthor("FUCK!!")
+          .setAuthor("Oops!!")
           .setTitle("A fault occured :sob: Please inform my developer")
         ]});
+        console.error("==================================");
+        console.error("Fuck a fault occured");
+        console.error("----------------------------------");
         console.error(err);
+        console.error("==================================");
       }
     }
   }
 
-  processPing(receivedMessage, config) {
+  processPing(outChannel, config) {
     var embed = new Discord.MessageEmbed()
     .setColor("#292340")
     .setAuthor("Minesweeper!", this.jsonfile.logoQuestion)
@@ -304,7 +308,7 @@ class MinesweeperBot {
       `Run \`${config.prefix}start\` to create a new game`,
       `Run \`${config.prefix}help\` for more information`
     ].join('\n'));
-    receivedMessage.channel.send({embeds:[embed]});
+    outChannel.send({embeds:[embed]});
   }
 
   getPerServerSettings(guildId) {

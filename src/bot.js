@@ -84,15 +84,44 @@ client.on("messageCreate", message => {
 
   // Respond to messages for the server's prefix or the default if the server doesn't have settings or the text channel is in a DM
   let config = bot.getPerServerSettings(message.guild == null ? ("dm-" + message.author.id) : message.guild.id.toString());
-  if (message.mentions.has(client.user)) return bot.processPing(message, config);
+  if (message.mentions.has(client.user)) return bot.processPing(message.channel, config);
   if (message.content.startsWith(config.prefix) && !message.content.startsWith(`${config.prefix} `)) return bot.processMessageCommand(message, config);
+});
+
+client.on("guildCreate", guild => {
+  if (bot == null) return;
+  let config = bot.getPerServerSettings(guild.id.toString());
+  var embed = new Discord.MessageEmbed()
+  .setColor("#292340")
+  .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
+  .setTitle("Welcome")
+  .setDescription([
+    "Thanks for inviting me to your server, here's how to get started.",
+    `Run \`${config.prefix}start\` to create a new game`,
+    `Run \`${config.prefix}help\` for more information`
+  ].join('\n'));
+
+  guild.channels.fetch().then(channels=>{
+    channels = channels.filter(x=>x.isText());
+    if(channels.size>0) {
+      let goodChannelRegex = /.+(general).+/i;
+      let outChannel = channels.first();
+      for (const value of channels.values()) {
+        if(goodChannelRegex.test(value.name)) {
+          outChannel = value;
+          break;
+        }
+      }
+      outChannel.send({embeds:[embed]});
+    }
+  })
 });
 
 client.on("interactionCreate", interaction => {
   if(interaction.isButton()) {
     bot.menuController.clickButton(interaction, interaction.user);
   } else if(interaction.isCommand()) {
-    let config = bot.getPerServerSettings(message.guild == null ? ("dm-" + message.author.id) : message.guild.id.toString());
+    let config = bot.getPerServerSettings(interaction.guild == null ? ("dm-" + interaction.user.id) : interaction.guild.id.toString());
     bot.processInteractionCommand(interaction, config);
   }
 });
