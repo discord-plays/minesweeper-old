@@ -11,15 +11,15 @@ function digCommand(bot, guildId, channelId, replyFunc, args) {
         throw new Error(`Error: Cell \`${args[i]}\` is invalid, command execution stopped!`);
       }
       var cell = board.get(cellPos.col, cellPos.row);
-      if (cell.flag != 0) throw new Error("Error: You can't dig a flagged cell");
+      if (cell.flagged) throw new Error("Error: You can't dig a flagged cell");
       if (cell.visible) continue;
-      if (cell.mine != 0) {
+      if (cell.mined) {
         cell.visible = true;
         return board.bombExplode(replyFunc);
       }
       board.floodFill(cellPos.col, cellPos.row);
     }
-    board.detectWin(replyFunc);
+    if(!board.detectWin(replyFunc)) board.displayBoard(replyFunc);
   } else {
     return bot.sendMissingGame(replyFunc, guildId);
   }

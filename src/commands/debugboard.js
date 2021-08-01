@@ -26,7 +26,7 @@ function debugboardCommand(bot, msg, args = []) {
 }
 
 function fancyPrint(i, j, cell) {
-  return `X: ${i} Y: ${j} Mine: ${cell.mine} Flag: ${cell.flag} Number: ${cell.number} Visible: ${cell.visible}`;
+  return `X: ${i} Y: ${j} Mine: ${cell.mined ? cell.mine.id : null} Flag: ${cell.flagged ? cell.flag.id : null} Number: ${cell.number} Visible: ${cell.visible}`;
 }
 
 var helpExample = [

@@ -1,4 +1,4 @@
-function flagCommand(bot, msg, args) {
+function flagCommand(bot, guildId, channelId, replyFunc, args) {
   var boardId = guildId + "-" + channelId;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
@@ -30,7 +30,7 @@ function flagCommand(bot, msg, args) {
         }
         var cell = board.get(cellPos.col, cellPos.row);
         if (cell.visible && !cell.flagged) continue;
-        else cell.flag = currentFlag.id;
+        else cell.flag = currentFlag;
         cell.visible = cell.flagged;
       }
     }

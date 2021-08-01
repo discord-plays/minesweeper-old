@@ -1,12 +1,10 @@
-const Discord = require("discord.js");
-
 function deployCommand(bot, msg, args = []) {
   if(msg.author.id == bot.jsonfile.ownerId) {
     if(args.length==1) {
       if(args[0]=="global") {
         registerCommands(bot, collected=>{
           bot.client.application.commands.set(collected);
-          msg.reply("<:tickYes:342738345673228290>");
+          msg.reply("<:boxYes:871365040509419550>");
         });
       } else if(args[0]=="guild") {
         if(msg.channel.guild == null) {
@@ -14,7 +12,7 @@ function deployCommand(bot, msg, args = []) {
         } else {
           registerCommands(bot, collected=>{
             msg.channel.guild.commands.set(collected);
-            msg.reply("<:tickYes:342738345673228290>");
+            msg.reply("<:boxYes:871365040509419550>");
           });
         }
       } else {

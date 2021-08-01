@@ -1,9 +1,10 @@
 const Discord = require("discord.js");
+const { version } = require('../../package.json');
 
 function creditsCommand(bot, replyFunc) {
   var embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
-    .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
+    .setAuthor(`Discord Plays Minesweeper (v${version})`, bot.jsonfile.logoQuestion)
     .setTitle("Credits")
     .addFields(bot.CREDITS);
   replyFunc.reply({embeds:[embed]});
