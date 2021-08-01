@@ -1,6 +1,7 @@
 const DEBUG = require('./debug');
 const DEBUG_LOGGING = require('./debug_logging');
-const CREDITS = require('./credits');
+const CREDITS = require('./credits.json');
+const { version } = require('../package.json');
 
 const path = require("path");
 const fs = require("fs");
@@ -12,7 +13,7 @@ const client = new Discord.Client({
 
 const MinesweeperBot = require("./game/Minesweeper");
 const myServer = require('./server');
-const loadingconfig = require("./config.json");
+const loadingconfig = require('./config.json');
 
 const basedir = __dirname;
 const datadir = path.join(__dirname, ".data");
@@ -68,7 +69,7 @@ if (!fs.existsSync(boardDataPath)) fs.mkdirSync(boardDataPath);
 var bot = null;
 
 client.on("ready", () => {
-  console.log(`Discord Plays Minesweeper Bot ${jsonfile.version}`);
+  console.log(`Discord Plays Minesweeper v${version}`);
   console.log(`Do \`>credits\` to see the people who made this crazy bot`);
   console.log(`Do \`>deploy guild\` to setup slash commands in the guild`);
   bot = new MinesweeperBot(client, myServer, options);
@@ -93,7 +94,7 @@ client.on("guildCreate", guild => {
   let config = bot.getPerServerSettings(guild.id.toString());
   var embed = new Discord.MessageEmbed()
   .setColor("#292340")
-  .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
+  .setAuthor("Discord Plays Minesweeper", bot.jsonfile.logoQuestion)
   .setTitle("Welcome")
   .setDescription([
     "Thanks for inviting me to your server, here's how to get started.",

@@ -40,7 +40,10 @@ const client = new Discord_OAuth_Client({
 var authorizeURL = 'https://discord.com/oauth2/authorize';
  
 app.get("/", (req,res,...a)=>{
-  res.render(getFile('index.ejs'),{bot:botData});
+  res.render(getFile('index.ejs'),{
+    minesweeper:bot,
+    bot:botData
+  });
 });
 
 app.use('/styles',express.static(path.join(www,'styles')));

@@ -16,5 +16,9 @@
   {
     "name": "Thanks to:",
     "value": "All the bugtesters and people who helped in one way or another"
+  },
+  {
+    "name": "Github",
+    "value": "[github.com/discord-plays-minesweeper/bot](https://github.com/discord-plays-minesweeper/bot)"
   }
 ]
