@@ -1,11 +1,13 @@
 const Jimp = require('jimp');
 const path = require('path');
+const Utils = require('./Utils');
 
 class LoadedTexturepack {
   constructor(basedir, texturepath) {
     this.basedir = basedir;
     this.texturepath = texturepath == "%%default%%" ? "mods/$$/assets" : texturepath;
     this.cached = {};
+    this.palette = {width: 16, height: 3};
   }
 
   /**
@@ -25,10 +27,10 @@ class LoadedTexturepack {
    * @param {integer} index 
    * @returns Jimp image
    */
-  getPaletteColor(index) {
+  async getPaletteColor(index) {
     var size = this.palette.width * this.palette.height;
     var lower = Math.abs(Math.floor(index / size));
-    return this.indexIntoPalette((index + (this.palette.width - 1) + lower * size) % size);
+    return await this.indexIntoPalette((index + (this.palette.width - 1) + lower * size) % size);
   }
 
   /**
@@ -36,38 +38,10 @@ class LoadedTexturepack {
    * @param {integer} index 
    * @returns Jimp image
    */
-  indexIntoPalette(index) {
-    var topLeft = [208, 144];
+  async indexIntoPalette(index) {
     var pos = [((index % this.palette.width)), Math.floor(index / this.palette.width)];
-    return this.getIcon(topLeft[0] + pos[0], topLeft[1] + pos[1], 1, 1, true);
-  }
-
-  /**
-   * Get a flag by its name or number
-   * @param {string/integer} n 
-   * @returns Jimp image
-   */
-  getFlag(n) {
-    var specialFlag = this.getSpecialFlag(n);
-    if (specialFlag != null) return specialFlag;
-    if (n < -10 || n > 10) return null;
-    if (n == 0) return this.getSpecialFlag("zero");
-    if (n > 0) return this.getPositiveFlag(n);
-    else return this.getNegativeFlag(Math.abs(n));
-  }
-
-  /**
-   * Get a mine by its name or number
-   * @param {string/integer} n 
-   * @returns Jimp image
-   */
-  getMine(n) {
-    var specialMine = this.getSpecialMine(n);
-    if (specialMine != null) return specialMine;
-    if (n < -10 || n > 10) return null;
-    if (n == 0) return this.getSpecialMine("zero");
-    if (n > 0) return this.getPositiveMine(n);
-    else return this.getNegativeMine(Math.abs(n));
+    let tex = await this.getTexture("discordplaysminesweeper.base/palette");
+    return tex.clone().crop(pos[0],pos[1],1,1);
   }
 
   /**
@@ -104,22 +78,6 @@ class LoadedTexturepack {
    */
   async raisedCell() {
     return await this.getTexture('discordplaysminesweeper.base/cell/raised');
-  }
-
-  /**
-   * Get mine cell
-   * @returns Jimp image
-   */
-  async getMine() {
-    return await this.getDebugPinkBlack();
-  }
-
-  /**
-   * Get flag cell
-   * @returns Jimp image
-   */
-  async getFlag() {
-    return await this.getDebugPinkBlack();
   }
 
   /**
@@ -279,6 +237,333 @@ class LoadedTexturepack {
   async getLoweredExtraCell(s) {
     if(!["melon","banana","question-mark","exclamation-mark"].includes(s)) return null;
     return await this.getTexture('discordplaysminesweeper.base/'+s+'/'+s);
+  }
+
+
+  /**
+   * =======================================================
+   * =======================================================
+   * After this is just the code for generating number cells
+   * =======================================================
+   * =======================================================
+   */
+
+  async getNumberWithPaletteColor(n, ...a) {
+    var img = await this.getNumber(n, ...a);
+    if (img == null) return img;
+    var paletteColor = (await this.getPaletteColor(Math.floor(n))).bitmap.data;
+    img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (_x, _y, idx) {
+      var red = img.bitmap.data[idx];
+      var green = img.bitmap.data[idx + 1];
+      var blue = img.bitmap.data[idx + 2];
+
+      if ((red + green + blue) == 0) {
+        img.bitmap.data[idx] = paletteColor[0];
+        img.bitmap.data[idx + 1] = paletteColor[1];
+        img.bitmap.data[idx + 2] = paletteColor[2];
+        img.bitmap.data[idx + 3] = paletteColor[3];
+      }
+    });
+    return img;
+  }
+
+  async getNumber(n, a = [null, null]) { // number, [numerator, denomenator]
+    if (n === null || n === undefined) return null;
+
+    // Is the number negative
+    if (n < 0) return await this.getNegative(n, a);
+
+    var img = null;
+    if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction?
+      var negativeFraction = Utils.xor(a[0] < 0, a[1] < 0);
+      a = a.map(x => Math.abs(x));
+      if (a[0] < 0 || a[1] < 0) return undefined; // faction numerator and denomenator can't be less than zero
+      if (/\./.exec(n.toString()) != null) return undefined; // is there a decimal in n? if yes, then return undefined as its formatted wrong
+
+      // special case for fractions with negative numbers
+      if (negativeFraction) {
+        if (n == 0) return await this.getNegative(n, a);
+        else return null;
+      }
+
+      var d = n.toString().length;
+      switch (d) {
+        case 1:
+          return (n.toString()[0] == "0") ? await this.getFraction(a[0], a[1]) : await this.getSingleFraction(n, a[0], a[1]);
+        case 2:
+          return await this.getDoubleFraction(n, a[0], a[1]);
+        case 3:
+          return await this.getTripleFraction(n, a[0], a[1]);
+        default:
+          return await this.getFraction(a[0], a[1]);
+      }
+    }
+
+    var d = (n % 1) * 10;
+    if (d != 0) {
+      switch (n.toString().replace('.', '').length) {
+        case 2:
+          return (n.toString()[0] == "0") ? await this.getDecimal(n) : await this.getSingleDecimal(n);
+        case 3:
+          return await this.getDoubleDecimal(n);
+        case 4:
+          return await this.getTripleDecimal(n);
+        default:
+          return null;
+      }
+    }
+
+    switch (n.toString().length) {
+      case 1:
+        return await this.getSingleNumber(n);
+      case 2:
+        if (n < 0) return await this.getTripleNumber(n);
+        return await this.getDoubleNumber(n);
+      case 3:
+        return await this.getTripleNumber(n);
+      default:
+        return null; // cool and good
+    }
+  }
+
+  async getNegative(n, a = [null, null]) { // number, [numerator, denomenator]
+    if (n === null || n === undefined) return null;
+    var img = null;
+    if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction?
+      if (a[0] < 0 || a[1] < 0) return undefined; // faction numerator and denomenator can't be less than zero
+      if (/\./.exec(n.toString()) != null) return undefined; // is there a decimal in n? if yes, then return undefined as its formatted wrong
+      var d = n.toString().length;
+      switch (d) {
+        case 2:
+          return await this.getNegativeSingleFraction(n, a[0], a[1]);
+        case 3:
+          return await this.getNegativeDoubleFraction(n, a[0], a[1]);
+        case 4:
+          return await this.getNegativeTripleFraction(n, a[0], a[1]);
+        default:
+          return await this.getNegativeFraction(a[0], a[1]);
+      }
+    }
+
+    var d = (n % 1) * 10;
+    if (d != 0) {
+      switch (n.toString().replace('.', '').length) {
+        case 3:
+          return (n.toString()[0] == "0") ? await this.getNegativeDecimal(n) : await this.getNegativeSingleDecimal(n);
+        case 4:
+          return await this.getNegativeDoubleDecimal(n);
+        case 5:
+          return await this.getNegativeTripleDecimal(n);
+        default:
+          return null;
+      }
+    }
+
+    switch (n.toString().length) {
+      case 2:
+        return await this.getNegativeSingle(n);
+      case 3:
+        return await this.getNegativeDouble(n);
+      case 4:
+        return await this.getNegativeTriple(n);
+      default:
+        return null; // cool and good
+    }
+  }
+
+  async getSingleNumber(n) {
+    if (n < 0 || n > 10) return null;
+    return await this.getTexture(`discordplaysminesweeper.base/numbers/${n}`);
+  }
+  async getMiniNumber(n) {
+    if (n < 0 || n > 10) return null;
+    return await this.getTexture(`discordplaysminesweeper.base/small-numbers/${n}`);
+  }
+  async getMicroNumberBlackBlue(n) {
+    return await this.getMicroNumber(n,"tiny-numbers-black-on-blue");
+  }
+  async getMicroNumberWhiteBlue(n) {
+    return await this.getMicroNumber(n,"tiny-numbers-white-on-blue");
+  }
+  async getMicroNumber(n, p="tiny-numbers") {
+    if (n<0||n>9) return null;
+    return await this.getTexture(`discordplaysminesweeper.base/${p}/${n}`);
+  }
+  async getDoubleNumber(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/number-double');
+    if (/^\d\d$/.exec(n) === null) return null;
+    base.composite(await this.getMiniNumber(Math.floor(n / 10)), 2, 3);
+    base.composite(await this.getMiniNumber(n % 10), 9, 3);
+    return base;
+  }
+  async getSingleDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-single');
+    if (/^\d\.\d$/.exec(n) === null) return null;
+    base.composite(await this.getMiniNumber(Math.floor(n / 1)), 2, 3);
+    base.composite(await this.getMicroNumber(parseInt(n * 10) % 10), 12, 8);
+    return base;
+  }
+  async getSingleFraction(a, b, c) {
+    if ([a, b, c].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-single');
+    base.composite(await this.getMiniNumber(a), 2, 3);
+    base.composite(await this.getMicroNumber(b), 11, 2);
+    base.composite(await this.getMicroNumber(c), 11, 10);
+    return base;
+  }
+  async getDoubleDecimal(n) {
+    if (/^\d\d\.\d$/.exec(n) === null) return null;
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-double');
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 2, 6);
+    base.composite(await this.getMicroNumber(Math.floor(n % 10)), 6, 6);
+    base.composite(await this.getMicroNumber(parseInt(n * 10) % 10), 12, 6);
+    return base;
+  }
+  async getDoubleFraction(a, b, c) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-double');
+    if ([/^\d\d$/.exec(a), ...([b, c].map(x => /^\d$/.exec(x)))].filter(x => x === null).length >= 1) return null;
+    base.composite(await this.getMicroNumber(Math.floor(a / 10) % 10), 2, 6);
+    base.composite(await this.getMicroNumber(a % 10), 6, 6);
+    base.composite(await this.getMicroNumber(b % 10), 11, 2);
+    base.composite(await this.getMicroNumber(c % 10), 11, 10);
+    return base;
+  }
+  async getTripleNumber(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/number-triple');
+    if (/^\d\d\d$/.exec(n) === null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 100)), 3, 6);
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 7, 6);
+    base.composite(await this.getMicroNumber(n % 10), 11, 6);
+    return base;
+  }
+  async getTripleDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-triple');
+    if (/^\d\d\d\.\d$/.exec(n) == null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 100) % 10), 2, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 6, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 10, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n * 10) % 10), 12, 10);
+    return base;
+  }
+  async getTripleFraction(a, b, c) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-triple');
+    if (/^\d\d\d$/.exec(a) == null || [b, c].map(x => /^\d$/.exec(x)).filter(x => x === null) >= 1) return null;
+    base.composite(await this.getMicroNumber(Math.floor((a / 100) % 10)), 2, 2);
+    base.composite(await this.getMicroNumber(Math.floor((a / 10) % 10)), 6, 2);
+    base.composite(await this.getMicroNumber(a % 10), 10, 2);
+    base.composite(await this.getMicroNumber(b % 10), 5, 8);
+    base.composite(await this.getMicroNumber(c % 10), 12, 10);
+    return base;
+  }
+  async getFraction(a, b) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction');
+    if ([a, b].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
+    base.composite(await this.getMicroNumber(a), 7, 2);
+    base.composite(await this.getMicroNumber(b), 7, 10);
+    return base;
+  }
+
+  async getNegativeSingle(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/number-negative-single');
+    n = Math.abs(Math.floor(n));
+    if(n < 1 || n > 9) return null;
+    base.composite(await this.getMiniNumber(n % 10), 8, 3);
+    return base;
+  }
+  async getNegativeDouble(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/number-negative-double');
+    n = Math.abs(Math.floor(n));
+    if (/^\d\d$/.exec(n) == null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 8, 6);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 12, 6);
+    return base;
+  }
+  async getNegativeTriple(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/number-negative-triple');
+    n = Math.abs(Math.floor(n));
+    if (/^\d\d\d$/.exec(n) == null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 100) % 10), 4, 6);
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 8, 6);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 12, 6);
+    return base;
+  }
+
+  async getDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal');
+    if (/0\.\d/.exec(n) == null) return null;
+    base.composite(await this.getMiniNumber((n * 10) % 10), 8, 3);
+    return base;
+  }
+
+  async getNegativeSingleFraction(n, a, b) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-negative-single');
+    n = Math.abs(Math.floor(n));
+    if ([n, a, b].map(x => /^\d$/.exec(x)).filter(x => x === null).length >= 1) return null;
+    base.composite(await this.getMicroNumber(n % 10), 6, 6);
+    base.composite(await this.getMicroNumber(Math.floor(a) % 10), 11, 2);
+    base.composite(await this.getMicroNumber(Math.floor(b) % 10), 11, 10);
+    return base;
+  }
+  async getNegativeDoubleFraction(n, a, b) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-negative-double');
+    n = Math.abs(Math.floor(n));
+    if (/^\d\d$/.exec(n) == null || [a, b].map(x => /^\d$/.exec(x)).filter(x => x === null) >= 1) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 7, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 11, 2);
+    base.composite(await this.getMicroNumber(Math.floor(a % 10)), 5, 8);
+    base.composite(await this.getMicroNumber(Math.floor(b % 10)), 12, 10);
+    return base;
+  }
+  async getNegativeTripleFraction(n, a, b) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-negative-triple');
+    n = Math.abs(Math.floor(n));
+    if (/^\d\d\d$/.exec(n) == null || [a, b].map(x => /^\d$/.exec(x)).filter(x => x === null) >= 1) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 100) % 10), 4, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 8, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 12, 2);
+    base.composite(await this.getMicroNumber(Math.floor(a % 10)), 5, 8);
+    base.composite(await this.getMicroNumber(Math.floor(b % 10)), 12, 10);
+    return base;
+  }
+  async getNegativeFraction(a, b) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/fraction-negative');
+    base.composite(await this.getMicroNumber(Math.floor(a) % 10), 10, 2);
+    base.composite(await this.getMicroNumber(Math.floor(b) % 10), 10, 10);
+    return base;
+  }
+  async getNegativeDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-negative');
+    n = Math.abs(n);
+    if (/0\.\d/.exec(n) == null) return null;
+    base.composite(await this.getMiniNumber(Math.floor(n * 10) % 10), 9, 3);
+    return base;
+  }
+  async getNegativeSingleDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-negative-single');
+    n = Math.abs(n);
+    if (/^\d\.\d$/.exec(n) === null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 6, 6);
+    base.composite(await this.getMicroNumber((n * 10) % 10), 12, 6);
+    return base;
+  }
+  async getNegativeDoubleDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-negative-double');
+    n = Math.abs(n);
+    if (/^\d\d\.\d$/.exec(n) === null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 7, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 11, 2);
+    base.composite(await this.getMicroNumber((n * 10) % 10), 12, 10);
+    return base;
+  }
+  async getNegativeTripleDecimal(n) {
+    var base = await this.getTexture('discordplaysminesweeper.base/base-tile/decimal-negative-triple');
+    n = Math.abs(n);
+    if (/^\d\d\d\.\d$/.exec(n) === null) return null;
+    base.composite(await this.getMicroNumber(Math.floor(n / 100) % 10), 4, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n / 10) % 10), 8, 2);
+    base.composite(await this.getMicroNumber(Math.floor(n) % 10), 12, 2);
+    base.composite(await this.getMicroNumber((n * 10) % 10), 12, 10);
+    return base;
   }
 }
 

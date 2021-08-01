@@ -124,7 +124,6 @@ class MinesweeperBoard {
         for (var y = 0; y < $t.height; y++) {
           var cell = $t.get(x, y);
           var view = await $t.calculateCurrentCellView(textures, cell, $t.exploded);
-          console.log(view);
           baseimg.composite(view == null ? await textures.getDebugPinkBlack() : view, (1 + x) * 16, (1 + y) * 16);
         }
 
@@ -179,7 +178,7 @@ class MinesweeperBoard {
           regenMine = false;
         }
       }
-      $t.get(xRand, yRand).mine = parseInt(randMine);
+      $t.get(xRand, yRand).mine = this.bot.getMineById(randMine);
       previousMineCoords.push([xRand, yRand]);
     }
   }
@@ -208,7 +207,7 @@ class MinesweeperBoard {
     var totalUncovered = 0;
     for (var i = 0; i < $t.width; i++) {
       for (var j = 0; j < $t.height; j++) {
-        if ($t.get(i, j).mine == 0) totalNonMines++;
+        if (!$t.get(i, j).mined) totalNonMines++;
         if ($t.get(i, j).visible) totalUncovered++;
         if ($t.get(i, j).flagged) totalUncovered--;
       }
@@ -217,35 +216,23 @@ class MinesweeperBoard {
     return false;
   }
 
-  // TODO: find all the mines and set the numbers around them
   fillNumbers() {
     var $t = this;
     for (var i = 0; i < $t.width; i++)
       for (var j = 0; j < $t.height; j++)
-        $t.get(i, j).number = $t.findMines(i, j);
+        if($t.get(i, j).mined)
+          $t.fillNumbersForMine($t.get(i, j).mine, i, j);
   }
 
-  findMines(x, y) {
-    var $t = this,
-      toCheck = [
-        [x, y - 1], // top middle
-        [x - 1, y - 1], // top left
-        [x - 1, y], // left middle
-        [x - 1, y + 1], // bottom left
-        [x, y + 1], // bottom middle
-        [x + 1, y - 1], // top right
-        [x + 1, y], // right middle
-        [x + 1, y + 1] // bottom right
-      ];
-    var cellType = Number.MAX_SAFE_INTEGER;
+  fillNumbersForMine(mine, x, y) {
+    var $t = this;
+    let toCheck = mine.affectedCells(x, y);
     for (var i = 0; i < toCheck.length; i++) {
       if (toCheck[i][0] < 0 || toCheck[i][1] < 0 || toCheck[i][0] >= $t.width || toCheck[i][1] >= $t.height) continue;
-      var n = $t.get(toCheck[i][0], toCheck[i][1]).mine;
-      if (n == 0) continue;
-      if (cellType == Number.MAX_SAFE_INTEGER) cellType = 0;
-      cellType += n;
+      let n = $t.get(toCheck[i][0], toCheck[i][1]);
+      if(n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
+      n.number = mine.calculateValue(n.number);
     }
-    return cellType;
   }
 
   floodFill(posX, posY, cells = []) {
@@ -258,14 +245,12 @@ class MinesweeperBoard {
       i++;
       if (toCheck[i][0] < 0 || toCheck[i][0] >= $t.width || toCheck[i][1] < 0 || toCheck[i][1] >= $t.height) continue;
       var cell = $t.get(toCheck[i][0], toCheck[i][1]);
-      if (cell.flag == 0) {
+      if (!cell.flagged) {
         cells.push(toCheck[i]);
         $t.get(toCheck[i][0], toCheck[i][1]).visible = true;
       }
-      if (cell.mine != 0) {
-        return bombExplode(guildId, channelId);
-      }
-      if (cell.flag == 0 && cell.mine == 0 && cell.number == Number.MAX_SAFE_INTEGER) {
+      if (cell.mined) throw new Error("Failed: bomb exploded");
+      if (!cell.flagged && !cell.mined && cell.number == Number.MAX_SAFE_INTEGER) {
         // check if cell is blank
         var x = toCheck[i][0];
         var y = toCheck[i][1];
@@ -352,7 +337,7 @@ class MinesweeperBoard {
     } else if ($t.exploded) {
       replyFunc.reply({embeds:[$t.generateBoardEmbed()]}).then(m => {
         $t.render().then(img => {
-          m.edit({
+          let data = {
             embeds:[
               new Discord.MessageEmbed()
               .setColor("#ff0000")
@@ -362,9 +347,15 @@ class MinesweeperBoard {
             files:[
               new Discord.MessageAttachment(img, "minesweeperboard.png")
             ]
-          }).catch(reason => {
-            console.error(reason);
-          });
+          }
+          if(replyFunc.editReply)
+            replyFunc.editReply(data).catch(reason => {
+              console.error(reason);
+            });
+          else
+            m.edit(data).catch(reason => {
+              console.error(reason);
+            });
         }).catch(reason => {
           console.error(reason);
         });
@@ -376,12 +367,18 @@ class MinesweeperBoard {
         $t.generateBoardEmbed().addField("Loading...","(eta 3 years)")
       ]}).then(m => {
         $t.render().then(img => {
-          m.edit({
+          let data = {
             files:[new Discord.MessageAttachment(img, "minesweeperboard.png")],
             embeds:[$t.generateBoardEmbed().setImage("attachment://minesweeperboard.png")]
-          }).catch(reason => {
-            console.error(reason);
-          });
+          };
+          if(replyFunc.editReply)
+            replyFunc.editReply(data).catch(reason => {
+              console.error(reason);
+            });
+          else
+            m.edit(data).catch(reason => {
+              console.error(reason);
+            });
         }).catch(reason => {
           console.error(reason);
         });
@@ -430,12 +427,12 @@ class MinesweeperBoard {
 
   async calculateCurrentCellView(textures, cell, showExploded = true) {
     if (showExploded && cell.mined) {
-      if (cell.visible) return await textures.getMine(cell.mine);
+      if (cell.visible) return await cell.mine.getMineTexture(textures);
       else return await textures.getRedExclamationMark();
     }
     if (!cell.visible) return await textures.raisedCell();
-    if (cell.flagged) return await textures.getFlag(cell.flag);
-    if (cell.mined) return await textures.getMine(cell.mine);
+    if (cell.flagged) return await cell.flag.getFlagTexture(textures);
+    if (cell.mined) return await cell.mine.getMineTexture(textures);
     if (cell.number == Number.MAX_SAFE_INTEGER) return await textures.loweredCell();
     return await textures.getNumberWithPaletteColor(cell.number);
   }

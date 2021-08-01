@@ -302,7 +302,7 @@ class MinesweeperBot {
   processPing(outChannel, config) {
     var embed = new Discord.MessageEmbed()
     .setColor("#292340")
-    .setAuthor("Minesweeper!", this.jsonfile.logoQuestion)
+    .setAuthor("Discord Plays Minesweeper", this.jsonfile.logoQuestion)
     .setTitle("Welcome")
     .setDescription([
       `Run \`${config.prefix}start\` to create a new game`,

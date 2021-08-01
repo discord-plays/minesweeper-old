@@ -26,7 +26,7 @@ class Mine {
   /*
    * Get the coordinates of all the cells affected by 
    */
-  affectedCells(x,y,width,height) {
+  affectedCells(x,y) {
     throw new Error("Default Value Error: virtual method affectedCells()");
   }
 
@@ -55,7 +55,7 @@ class Mine {
   /*
    * Default affected cells for 3x3 box
    */
-  default3x3Box(x, y, width, height) {
+  default3x3Box(x, y) {
     return [
       [x - 1, y - 1], // top left
       [x, y - 1], // top middle

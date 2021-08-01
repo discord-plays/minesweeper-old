@@ -11,8 +11,8 @@ class NumberAddMine extends Mine {
     return a + this.value;
   }
 
-  affectedCells(x, y, width, height) {
-    return this.default3x3Box(x, y, width, height);
+  affectedCells(x, y) {
+    return this.default3x3Box(x, y);
   }
 
   async getMineTexture(texturepack) {
@@ -20,7 +20,7 @@ class NumberAddMine extends Mine {
   }
 
   async getFlagTexture(texturepack) {
-    return await texturepack.getTexture(`${this.mod.id}/mines/${this.value}`);
+    return await texturepack.getTexture(`${this.mod.id}/flags/${this.value}`);
   }
 }
 
