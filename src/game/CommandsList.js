@@ -21,7 +21,7 @@ class CommandsList extends Globber {
   }
 
   find(name) {
-    var z = this.commands.filter(x => x.name == name);
+    var z = this.commands.filter(x => this.getCommandName(x) === name);
     if (z.length != 1) return null;
     return z[0];
   }

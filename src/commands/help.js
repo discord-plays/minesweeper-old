@@ -34,7 +34,7 @@ function helpCommand(bot, guildId, replyFunc, cmd) {
 
 function generateGeneralHelpText(bot, guildId) {
   var settings = bot.getPerServerSettings(guildId);
-  var commandNames = bot.__commandslist.commands.map(x => bot.__commandslist.getCommandName(x));
+  var commandNames = bot.getAllCommands();
   var commandDetails = [];
   for (var i = 0; i < commandNames.length; i++) {
     var comm = bot.findCommand(commandNames[i]);

@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <% if(bot) { %>
+      <title>@<%= bot.tag %> Missions</title>
+    <% } else { %>
+      <title>Discord Plays Minesweeper</title>
+    <% } %>
+
+    <%- include('header') %>
+  </head>
+  <body class="opc-darkmode">
+    <%- include('navbar') %>
+    <div class="w3-container opc-center-container">
+      <div class="w3-container w3-card-4 w3-padding-16 dpmMain">
+        <% if(bot) { %>
+          <h1>@<%= bot.tag %> Missions</h1>
+          <p>Here is a list of all the available missions.</p>
+          <% let k = minesweeper.getAllMissions(); %>
+          <% if(k.length >= 1) { %>
+            <ul>
+              <% for(let i=0;i<k.length;i++) { %>
+                <% let mission = minesweeper.findMission(k[i]); %>
+                <li><%= k[i] %> - <%= mission.description %></li>
+              <% } %>
+            </ul>
+          <% } else { %>
+            <div>Couldn't load any missions? Maybe the bot is broken?</div>
+          <% } %>
+        <% } else { %>
+          <h1>Discord Plays Minesweeper</h1>
+          <p>The bot has not started yet.</p>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>

@@ -33,17 +33,16 @@ function deployCommand(bot, msg, args = []) {
 }
 
 function registerCommands(bot, callback) {
-  bot.getAllCommands().then(commands=>{
-    let collected = commands.map(x=>{
-      let c = bot.findCommand(x);
-      return (c==null||c.isHidden||c.debugOnly) ? null : {
-        name: x,
-        description: c.help.join(' '),
-        ...(c.hasOwnProperty("options") ? {options: c.options} : {})
-      };
-    }).filter(x=>x!=null);
-    callback(collected);
-  });
+  let commands = bot.getAllCommands();
+  let collected = commands.map(x=>{
+    let c = bot.findCommand(x);
+    return (c==null||c.isHidden||c.debugOnly) ? null : {
+      name: x,
+      description: c.help.join(' '),
+      ...(c.hasOwnProperty("options") ? {options: c.options} : {})
+    };
+  }).filter(x=>x!=null);
+  callback(collected);
 }
 
 var helpExample = [

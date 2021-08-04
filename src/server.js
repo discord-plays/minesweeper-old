@@ -83,6 +83,13 @@ app.get("/create", (req, res, ...a)=>{
   })
 });
 
+app.get("/missions", (req,res,...a)=>{
+  res.render(getFile('missions.ejs'),{
+    minesweeper:bot,
+    bot:botData
+  });
+});
+
 app.get("/settings", (req,res,...a)=>{
   checkSession(req, res, mySession => {
     let userChannel = users.hasOwnProperty(mySession.user.id) ? users[mySession.user.id].channel : undefined;

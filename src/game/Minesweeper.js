@@ -12,6 +12,7 @@ const defaultGuildSettings = {
 }
 
 const DEBUG_LOGGING = require('../debug_logging');
+const MissionsList = require("./MissionsList");
 
 class MinesweeperBot {
   constructor(client, server, options) {
@@ -21,6 +22,7 @@ class MinesweeperBot {
     this.client = client;
     this.loadedresources = 0;
     this.loadedcommands = 0;
+    this.loadedmissions = 0;
     this.web = server;
 
     // guildSettingsPath, userSettingsPath, maxBoardX, maxBoardY, jsonfile, datadir, basedir
@@ -36,6 +38,11 @@ class MinesweeperBot {
     this.__commandslist.load().then(() => {
       console.log("Loaded commands list");
       $t.loadedcommands++;
+    });
+    this.__missionslist = new MissionsList(this.basedir);
+    this.__missionslist.load().then(() => {
+      console.log("Loaded missions list");
+      $t.loadedmissions++;
     });
 
     this.__boards = {};
@@ -216,30 +223,28 @@ class MinesweeperBot {
     this.processReceivedError(new Error(`Error: There is no game running in this channel. Learn how to start one in \`${settings.prefix}help\``), replyFunc);
   }
 
-  getAllCommands() {
-    return new Promise((resolve, reject) => {
-      fs.readdir(path.join(this.basedir, 'commands'), (err, files) => {
-        if(err) {
-          console.error("Error collecting available commands");
-          reject("Error collecting available commands");
-          return;
-        }
+  getAllMissions() {
+    return this.__missionslist.missions.map(x=>this.__missionslist.getMissionName(x));
+  }
 
-        resolve(files.map(x=>x.replace(/\.js$/g,'')));
-      });
-    });
+  findMission(missionName) {
+    let cmd = this.__missionslist.find(missionName);
+    if(cmd !== null) {
+      var missionScript = require(cmd);
+      return missionScript;
+    }
+    return null;
+  }
+
+  getAllCommands() {
+    return this.__commandslist.commands.map(x=>this.__commandslist.getCommandName(x));
   }
 
   findCommand(primaryCommand) {
-    try {
-      var pathForCommandFile = path.join(this.basedir, 'commands', primaryCommand.replace(/[^a-zA-Z0-9]/g, '') + '.js');
-      if (fs.existsSync(pathForCommandFile)) {
-        var commandScript = require(pathForCommandFile);
-        return commandScript;
-      }
-    } catch (err) {
-      console.error("Error finding command file");
-      console.error(err);
+    let cmd = this.__commandslist.find(primaryCommand);
+    if(cmd !== null) {
+      var commandScript = require(cmd);
+      return commandScript;
     }
     return null;
   }
@@ -260,7 +265,7 @@ class MinesweeperBot {
       // Process the error
       if(that.processReceivedError(err, receivedMessage)) {
         // Swap hadError flag
-        [guildId, channelId] = [receivedMessage.guild == null ? "dm" : receivedMessage.guild.id, receivedMessage.channel.id];
+        let [guildId, channelId] = [receivedMessage.guild == null ? "dm" : receivedMessage.guild.id, receivedMessage.channel.id];
         let boardId = guildId + "-" + channelId;
         if (that.isBoard(boardId)) that.getBoard(boardId).hadError = true;
       }
@@ -292,7 +297,7 @@ class MinesweeperBot {
         replyFunc.reply({embeds:[
           new Discord.MessageEmbed()
           .setColor("#ba0c08")
-          .setAuthor("Uh Oh there was an issue:")
+          .setAuthor("Error:")
           .setTitle(err.message.slice(7, err.message.length))
         ]});
       } else {
