@@ -6,7 +6,7 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
   if(args.length == 1) {
     let mission = bot.findMission(args[0]);
     if(mission === null) {
-      throw new Error(`Error: Mission \`${cmd}\` doesn't exist`);
+      throw new Error(`Error: Mission \`${mission}\` doesn't exist`);
     } else {
       mission.command(d=>{
         bot.startGame(outChannel, d, replyFunc);
@@ -38,7 +38,8 @@ function startMessage(bot, msg, args = []) {
 }
 
 function startInteraction(bot, interaction) {
-  let opt=interaction.options.getString("options");
+  let opt=(interaction.options.getString("options") || "").split(' ').filter(x=>x!=="");
+  console.log(opt);
   startCommand(bot, interaction, interaction.channel, interaction.user, opt);
 }
 

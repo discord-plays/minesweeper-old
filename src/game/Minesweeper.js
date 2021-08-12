@@ -284,7 +284,7 @@ class MinesweeperBot {
       // Process the error
       if(that.processReceivedError(err, receivedInteraction)) {
         // Swap hadError flag
-        [guildId, channelId] = [receivedInteraction.guild == null ? "dm" : receivedInteraction.guild.id, receivedInteraction.channel.id];
+        let [guildId, channelId] = [receivedInteraction.guild == null ? "dm" : receivedInteraction.guild.id, receivedInteraction.channel.id];
         let boardId = guildId + "-" + channelId;
         if (that.isBoard(boardId)) that.getBoard(boardId).hadError = true;
       }
