@@ -21,7 +21,7 @@
     "body": "^5.1.0",
     "cookie-parser": "^1.4.5",
     "discord-oauth2-api": "^1.0.8",
-    "discord.js": "github:discordjs/discord.js",
+    "discord.js": "^13.0.1",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
