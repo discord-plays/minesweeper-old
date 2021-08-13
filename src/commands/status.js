@@ -12,7 +12,7 @@ function statusCommand(bot, replyFunc) {
     .setColor("#007766")
     .setAuthor("Discord Plays Minesweeper", bot.jsonfile.logoGame)
     .setDescription(lines.join('\n'))
-  ]}).catch(reason => {
+  ],ephemeral:true}).catch(reason => {
     console.error(reason);
   });
   if(bot.DEBUG) console.log("Guild names:\n"+guildCache.map(x=>` - ${x.name}`).join('\n'));

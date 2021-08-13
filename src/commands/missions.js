@@ -14,11 +14,16 @@ function missionsCommand(bot, replyFunc) {
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
     .setTitle("Missions")
     .setDescription([
-      `[Open this link for a full list of missions](${address.missions})`,
-      '',
-      'Some useful ones for you: easy'
+      'Some useful ones for you:',
+      '- easy'
     ].join('\n'));
-    replyFunc.reply({embeds:[embed]});
+    var row = new Discord.MessageActionRow().addComponents(
+      new Discord.MessageButton()
+        .setLabel("Full missions list")
+        .setStyle("LINK")
+        .setURL(address.missions.toString())
+    );
+    replyFunc.reply({embeds:[embed],components:[row],ephemeral:true});
 }
 
 function missionsMessage(bot, msg, args = []) {

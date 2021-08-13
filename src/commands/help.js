@@ -29,7 +29,7 @@ function helpCommand(bot, guildId, replyFunc, cmd) {
     .setTitle(arr == null ? "General help" : "Help: " + command)
     .setDescription(arr == null ? generateGeneralHelpText(bot, guildId).join("\n") : arr.join('\n'));
   if (exArr.length != 0) embed.addField(`Example${exArr.length==1?"":"s"}`, exArr.join('\n'));
-  replyFunc.reply({embeds:[embed]});
+  replyFunc.reply({embeds:[embed], ephemeral:true});
 }
 
 function generateGeneralHelpText(bot, guildId) {

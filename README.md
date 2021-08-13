@@ -1,20 +1,25 @@
 # Discord Plays: Minesweeper
+
 Discord Plays: Minesweeper is a Discord bot started by @Kikithecat12345 and rewritten by @MrMelon54.
 
-Bot Invite Link: https://discordapp.com/oauth2/authorize?client_id=664934351938650144&scope=bot
+To invite the bot just run `/invite` command in any server the bot is in. (Join the official Discord Plays Minesweeper Discord server if you aren't in any other servers with the bot.)
+
 ***
+
 Commands:
- - `>help` - Shows help screen
- - `>start` - Shows link to the website to setup a new board
- - `>dig [A1] {B2} {AA5}...` - Dig those positions in the ongoing game
- - `>flag &{type} [A1]` - Flags position with that flag type (if only one type of mine is present then that is default)
- - `>flag &{type} [A1] {B2}` - Flags multiple positions with that flag type (if only one type of mine is present then that is default)
- - `>flag &{type} [A1] {B2} &{type} {C3} {D4}` - Flags multiple positions with different flag types
- - `>board` - Displays the current state of the game in that channel
+
+- `/help` - Shows help screen
+- `/start` - Shows link to the website to setup a new board
+- `/dig [A1] {B2} {AA5}...` - Dig those positions in the ongoing game
+- `/flag &{type} [A1]` - Flags position with that flag type (if only one type of mine is present then that is default)
+- `/flag &{type} [A1] {B2}` - Flags multiple positions with that flag type (if only one type of mine is present then that is default)
+- `/flag &{type} [A1] {B2} &{type} {C3} {D4}` - Flags multiple positions with different flag types
+- `/board` - Displays the current state of the game in that channel
 
 Legend:
- - `[]` - Required argument
- - `{}` - Optional argument
+
+- `[]` - Required argument
+- `{}` - Optional argument
 
 Credits and other stuffs:
 Thanks to @MrMelon54 for making the Github and also basically rewriting all of it (he made over half of the code) and for hosting it.

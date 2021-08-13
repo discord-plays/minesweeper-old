@@ -4,7 +4,7 @@ function settingsCommand(bot, replyFunc, outGuild, author, member) {
   replyFunc.reply({embeds:[new MessageEmbed()
     .setColor("#cc8800")
     .setTitle("Sending you more details in your DMs")
-  ]});
+  ], ephemeral: true});
   if(outGuild===null) {
     // User settings menu
     author.createDM().then(dm=>{

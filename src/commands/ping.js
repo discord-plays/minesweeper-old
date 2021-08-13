@@ -6,7 +6,7 @@ function pingCommand(bot, replyFunc) {
       .setColor("#d9a6a7")
       .setAuthor("Discord Plays Minesweeper", bot.jsonfile.logoQuestion)
       .setTitle(`Pong! (${Math.floor(bot.client.ws.ping)}ms heartbeat)`)
-  ]});
+  ],ephemeral:true});
 }
 
 function pingMessage(bot, msg, args = []) {

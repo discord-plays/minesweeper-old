@@ -7,7 +7,7 @@ function creditsCommand(bot, replyFunc) {
     .setAuthor(`Discord Plays Minesweeper (v${version})`, bot.jsonfile.logoQuestion)
     .setTitle("Credits")
     .addFields(bot.CREDITS);
-  replyFunc.reply({embeds:[embed]});
+  replyFunc.reply({embeds:[embed],ephemeral:true});
 }
 
 function creditsMessage(bot, msg, args = []) {

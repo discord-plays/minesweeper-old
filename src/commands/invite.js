@@ -15,9 +15,19 @@ function inviteCommand(bot, replyFunc) {
   let embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-    .setTitle("Invite Link")
-    .setDescription(`[Invite @${bot.client.user.tag}](${invite})`);
-  replyFunc.reply({embeds:[embed]});
+    .setTitle("Invite")
+    .setDescription("Click on the button below to invite the Discord Plays Minesweeper bot to one of your servers.");
+  var row = new Discord.MessageActionRow().addComponents(
+    new Discord.MessageButton()
+      .setLabel(`Invite @${bot.client.user.tag}`)
+      .setStyle("LINK")
+      .setURL(invite.toString())
+  );
+  replyFunc.reply({
+    embeds:[embed],
+    components:[row],
+    ephemeral:true
+  });
 }
 
 function inviteMessage(bot, msg, args = []) {

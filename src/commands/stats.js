@@ -4,7 +4,7 @@ function statsCommand(bot, replyFunc) {
   replyFunc.reply({embeds:[
     new Discord.MessageEmbed()
     .setDescription("this is a WIP") //TODO: literally everything to do with saving leaderboards and stats 
-  ]});
+  ],ephemeral:true});
 }
 
 function statsMessage(bot, msg, args = []) {

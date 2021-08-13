@@ -29,12 +29,20 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
       .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
       .setTitle("Start game")
       .setDescription([
-        `[Open this link to create a board](${address.create})`,
-        '',
         'If you already have the board creation page open in your browser you can just refresh it instead of opening the page again',
         'Disclaimer: You are required to login using your Discord account. If you are already logged in you can just press authorize to allow Discord Plays Minesweeper to know who you are.'
       ].join('\n'));
-    replyFunc.reply({embeds:[embed]});
+    var row = new Discord.MessageActionRow().addComponents(
+      new Discord.MessageButton()
+        .setLabel("Create a Board")
+        .setStyle("LINK")
+        .setURL(address.create.toString())
+    );
+    replyFunc.reply({
+      embeds:[embed],
+      components:[row],
+      ephemeral:true
+    });
   }
 }
 
