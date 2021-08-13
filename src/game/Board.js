@@ -73,6 +73,7 @@ class MinesweeperBoard {
       y.flag = $t.bot.getFlagById(x[1]);
       y.number = x[2] === null ? Number.MAX_SAFE_INTEGER : x[2];
       y.visible = x[3];
+      y.extra = x[4];
       return y;
     }), [d.width, d.height]);
     this.seed = d.seed.base;
@@ -276,13 +277,12 @@ class MinesweeperBoard {
     var $t = this;
     var totalNonMines = 0;
     var totalUncovered = 0;
-    for (var i = 0; i < $t.width; i++) {
+    for (var i = 0; i < $t.width; i++)
       for (var j = 0; j < $t.height; j++) {
         if (!$t.get(i, j).mined) totalNonMines++;
         if ($t.get(i, j).visible) totalUncovered++;
         if ($t.get(i, j).flagged) totalUncovered--;
       }
-    }
     if (totalNonMines == totalUncovered) return $t.gameWin(replyFunc);
     return false;
   }
@@ -293,15 +293,30 @@ class MinesweeperBoard {
       for (var j = 0; j < $t.height; j++)
         if($t.get(i, j).mined)
           $t.fillNumbersForMine($t.get(i, j).mine, i, j, $t.width, $t.height);
+    
+    for (var i = 0; i < $t.width; i++)
+      for (var j = 0; j < $t.height; j++) {
+        let c=$t.get(i,j);
+        if(!c.mined && !c.flagged)
+          // I think this means 1 in 69,000 chance
+          if (c.number == 69 && Math.random() < 0.000014493) c.extra = "69";
+      }
   }
 
   fillNumbersForMine(mine, x, y, w, h) {
     var $t = this;
+    let toZero = mine.default3x3Box(x, y, w, h);
+    for (var i = 0; i < toZero.length; i++) {
+      if (toZero[i][0] < 0 || toZero[i][1] < 0 || toZero[i][0] >= $t.width || toZero[i][1] >= $t.height) continue;
+      let n = $t.get(toZero[i][0], toZero[i][1]);
+      if(n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
+    }
     let toCheck = mine.affectedCells(x, y, w, h);
     for (var i = 0; i < toCheck.length; i++) {
       if (toCheck[i][0] < 0 || toCheck[i][1] < 0 || toCheck[i][0] >= $t.width || toCheck[i][1] >= $t.height) continue;
       let n = $t.get(toCheck[i][0], toCheck[i][1]);
       if(n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
+      n.extra = mine.calculateExtra(n.number);
       n.number = mine.calculateValue(n.number);
     }
   }
@@ -497,17 +512,18 @@ class MinesweeperBoard {
   }
 
   async calculateCurrentCellView(textures, cell, showExploded = true) {
-    if (showExploded && cell.mined) {
-      if (cell.visible) return await cell.mine.getMineTexture(textures);
-      else return await textures.getRedExclamationMark();
-    }
+    if (showExploded && cell.mined) return await cell.mine.getMineTexture(textures);
     if (!cell.visible) return await textures.raisedCell();
     if (cell.flagged) return await cell.flag.getFlagTexture(textures);
     if (cell.mined) return await cell.mine.getMineTexture(textures);
     if (cell.number == Number.MAX_SAFE_INTEGER) return await textures.loweredCell();
+
+    if (cell.extra == "?") return await textures.getTexture("discordplaysminesweeper.base/question-mark/question-mark");
+    if (cell.extra == "69") return await textures.getTexture("discordplaysminesweeper.base/cell/69");
     return await textures.getNumberWithPaletteColor(cell.number);
   }
 }
+
 /**
  * Thx stackoverflow
  * You are the best

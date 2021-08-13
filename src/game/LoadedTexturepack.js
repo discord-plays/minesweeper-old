@@ -274,6 +274,9 @@ class LoadedTexturepack {
   async getNumber(n, a = [null, null]) { // number, [numerator, denomenator]
     if (n === null || n === undefined) return null;
 
+    if (n >= 1000) return await this.getTexture("discordplaysminesweeper.base/cell/1k");
+    if (n <= -1000) return await this.getTexture("discordplaysminesweeper.base/cell/-1k");
+
     // Is the number negative
     if (n < 0) return await this.getNegative(n, a);
 

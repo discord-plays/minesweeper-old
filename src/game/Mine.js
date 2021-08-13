@@ -19,6 +19,14 @@ class Mine {
   }
 
   /*
+   * Calculate the new value for the extra property
+   */
+  calculateExtra(a) {
+    // Ignore
+    return "";
+  }
+
+  /*
    * Calculate the new value after being affected by the current mine for the number cell with value "a"
    */
   calculateValue(a) {
