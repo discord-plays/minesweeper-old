@@ -1,25 +1,5 @@
 <html>
   <head>
-    <% if(bot) { %>
-      <title>@<%= bot.tag %></title>
-    <% } else { %>
-      <title>Discord Plays Minesweeper</title>
-    <% } %>
-
-    <%- include('header') %>
+    <meta http-equiv="refresh" content="1;url=https://www.youtube.com/watch?v=dQw4w9WgXcQ">
   </head>
-  <body class="opc-darkmode">
-    <%- include('navbar') %>
-    <div class="w3-container opc-center-container">
-      <div class="w3-container w3-card-4 w3-padding-16 dpmMain">
-        <% if(bot) { %>
-          <h1>@<%= bot.tag %></h1>
-          <p>No user settings available yet.</p>
-        <% } else { %>
-          <h1>Discord Plays Minesweeper</h1>
-          <p>The bot has not started yet.</p>
-        <% } %>
-      </div>
-    </div>
-  </body>
 </html>
