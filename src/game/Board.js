@@ -292,12 +292,12 @@ class MinesweeperBoard {
     for (var i = 0; i < $t.width; i++)
       for (var j = 0; j < $t.height; j++)
         if($t.get(i, j).mined)
-          $t.fillNumbersForMine($t.get(i, j).mine, i, j);
+          $t.fillNumbersForMine($t.get(i, j).mine, i, j, $t.width, $t.height);
   }
 
-  fillNumbersForMine(mine, x, y) {
+  fillNumbersForMine(mine, x, y, w, h) {
     var $t = this;
-    let toCheck = mine.affectedCells(x, y);
+    let toCheck = mine.affectedCells(x, y, w, h);
     for (var i = 0; i < toCheck.length; i++) {
       if (toCheck[i][0] < 0 || toCheck[i][1] < 0 || toCheck[i][0] >= $t.width || toCheck[i][1] >= $t.height) continue;
       let n = $t.get(toCheck[i][0], toCheck[i][1]);

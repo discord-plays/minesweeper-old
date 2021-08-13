@@ -1,6 +1,6 @@
 const Jimp = require('jimp');
 const path = require('path');
-const Utils = require('./Utils');
+const xor = require('../utils/xor');
 
 class LoadedTexturepack {
   constructor(basedir, texturepath) {
@@ -18,7 +18,11 @@ class LoadedTexturepack {
   async getTexture(a) {
     if(this.cached.hasOwnProperty(a)) return this.cached[a];
     let b = path.join(this.basedir,this.texturepath.replace('$$',a.split('/')[0]),`${a}.png`);
-    this.cached[a] = await Jimp.read(b);
+    try {
+      this.cached[a] = await Jimp.read(b);
+    } catch(err) {
+      this.cached[a] = await this.getDebugPinkBlack();
+    }
     return this.cached[a];
   }
 
@@ -275,7 +279,7 @@ class LoadedTexturepack {
 
     var img = null;
     if ([a[0], a[1]].filter(x => x === null).length === 0) { // is it a fraction?
-      var negativeFraction = Utils.xor(a[0] < 0, a[1] < 0);
+      var negativeFraction = xor(a[0] < 0, a[1] < 0);
       a = a.map(x => Math.abs(x));
       if (a[0] < 0 || a[1] < 0) return undefined; // faction numerator and denomenator can't be less than zero
       if (/\./.exec(n.toString()) != null) return undefined; // is there a decimal in n? if yes, then return undefined as its formatted wrong
