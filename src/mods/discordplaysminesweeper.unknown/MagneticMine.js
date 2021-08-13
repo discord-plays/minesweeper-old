@@ -3,7 +3,7 @@ const Mine = require('../../game/Mine');
 class MagneticMine extends Mine {
   constructor() {
     super("magnetic", "Magnetic", 0);
-    this.alias = ["magnetic", "magnet"];
+    this.alias = ["Magnetic", "magnet"];
   }
 
   calculateExtra(a) {

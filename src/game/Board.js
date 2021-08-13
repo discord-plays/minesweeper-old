@@ -493,7 +493,7 @@ class MinesweeperBoard {
     for(let i=0;i<k.length;i++) {
       let f = mines.filter(x=>x.id == k[i]);
       if(f.length > 0) {
-        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name}`);
+        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name} (${f[0].alias.map(x=>`&${x}`).join(', ')})`);
       }
     }
 
