@@ -1,4 +1,4 @@
-function digCommand(bot, guildId, channelId, replyFunc, args) {
+function unflagCommand(bot, guildId, channelId, replyFunc, args) {
   var boardId = guildId + "-" + channelId;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
@@ -11,25 +11,20 @@ function digCommand(bot, guildId, channelId, replyFunc, args) {
         throw new Error(`Error: Cell \`${args[i]}\` is invalid, command execution stopped!`);
       }
       var cell = board.get(cellPos.col, cellPos.row);
-      if (cell.flagged) throw new Error("Error: You can't dig a flagged cell");
-      if (cell.visible) continue;
-      if (cell.mined) {
-        cell.visible = true;
-        return board.bombExplode(replyFunc);
-      }
-      board.floodFill(cellPos.col, cellPos.row);
+      if(cell.flagged) cell.flag = null;
+      cell.visible = cell.flagged;
     }
     board.save();
-    if(!board.detectWin(replyFunc)) board.displayBoard(replyFunc);
+    board.displayBoard(replyFunc);
   } else {
     return bot.sendMissingGame(replyFunc, guildId);
   }
 }
 
-function digMessage(bot, msg, args = []) {
-  if (args.length < 1) return bot.sendInvalidOptions('dig', msg);
+function unflagMessage(bot, msg, args = []) {
+  if (args.length < 1) return bot.sendInvalidOptions('unflag', msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  digCommand(bot, guildId, channelId, {reply:a=>{
+  unflagCommand(bot, guildId, channelId, {reply:a=>{
     if(typeof(a)==="string") a = {content:a};
     if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
     a.allowedMentions.repliedUser = false;
@@ -37,31 +32,30 @@ function digMessage(bot, msg, args = []) {
   }}, args);
 }
 
-function digInteraction(bot, interaction) {
+function unflagInteraction(bot, interaction) {
   [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
   let data=interaction.options.getString("data").split(' ');
-  digCommand(bot, guildId, channelId, interaction, data);
+  unflagCommand(bot, guildId, channelId, interaction, data);
 }
 
 var helpExample = [
-  "`>dig <A1> [B2] [AA5]`",
-  "`>dig A1 B2 AA5`",
-  "`>dig a5`"
+  "`>unflag <A1> [B2]`",
+  "`>unflag B3 C2`"
 ];
 var helpText = [
-  "Dig a cell in the current board"
+  "Unflag a cell in the current board"
 ];
-var digOptions = [{
+var flagOptions = [{
   name: 'data',
   type: 'STRING',
-  description: 'The cells to dig (e.g. A1 B2 C3)',
+  description: 'The cells to unflag (e.g. A1 B2 C3)',
   required: true
 }];
 
 module.exports = {
-  messageCommand: digMessage,
-  interactionCommand: digInteraction,
+  messageCommand: unflagMessage,
+  interactionCommand: unflagInteraction,
   help: helpText,
   example: helpExample,
-  options: digOptions
+  options: flagOptions
 };

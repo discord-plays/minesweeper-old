@@ -7,25 +7,33 @@ const { promises : fs } = require("fs");
 const path = require('path');
 
 class MinesweeperBoard {
-  constructor(bot, boardId, guildId, channelId, width, height, seed, texturepack) {
-    this.board = ndarray([], [width, height]);
-    this.seed = seed;
-    this.r = new randomgen(seed);
-    this.width = width;
-    this.height = height;
-    this.id = boardId;
-    this.guildId = guildId;
-    this.channelId = channelId;
-    this.texturepack = texturepack;
-    this.bot = bot;
-    this.won = false;
-    this.exploded = false;
-    this.cached = null;
-    this.hadError = false;
+  constructor(bot, boardId, guildId=null, channelId=null, width, height, seed, texturepack) {
+    if(guildId === null && channelId === null) {
+      // smaller constructor for reloading board
+      this.id = boardId;
+      this.bot = bot;
+      this.cached = null;
+      this.hadError = true;
+    } else {
+      this.board = ndarray([], [width, height]);
+      this.seed = seed;
+      this.r = new randomgen(seed);
+      this.width = width;
+      this.height = height;
+      this.id = boardId;
+      this.guildId = guildId;
+      this.channelId = channelId;
+      this.texturepack = texturepack;
+      this.bot = bot;
+      this.won = false;
+      this.exploded = false;
+      this.cached = null;
+      this.hadError = false;
 
-    for (var i = 0; i < this.width; i++)
-      for (var j = 0; j < this.height; j++)
-        this.board.set(i, j, new Cell(this));
+      for (var i = 0; i < this.width; i++)
+        for (var j = 0; j < this.height; j++)
+          this.board.set(i, j, new Cell(this));
+    }
   }
 
   get(x, y) {
@@ -43,7 +51,7 @@ class MinesweeperBoard {
   getRawData() {
     return {
       board: this.board.data,
-      seed: {base: this.seed, live: this.r.live},
+      seed: { base: this.seed, live: this.r.live },
       width: this.width,
       height: this.height,
       id: this.id,
@@ -52,23 +60,32 @@ class MinesweeperBoard {
       texturepack: this.texturepack,
       won: this.won,
       exploded: this.exploded,
-      totalMineCounts: this.totalMineCounts
+      totalMineCounts: this.totalMineCounts,
+      hadError: this.hadError
     }
   }
 
   loadRawData(d) {
-    this.board = d.board;
+    let $t=this;
+    this.board = ndarray(d.board.map(x=>{
+      let y=new Cell($t);
+      y.mine = $t.bot.getMineById(x[0]);
+      y.flag = $t.bot.getFlagById(x[1]);
+      y.number = x[2] === null ? Number.MAX_SAFE_INTEGER : x[2];
+      y.visible = x[3];
+      return y;
+    }), [d.width, d.height]);
     this.seed = d.seed.base;
-    this.live = d.seed.live;
+    this.r = new randomgen(d.seed.base, d.seed.live);
     this.width = d.width;
     this.height = d.height;
-    this.id = d.id;
     this.guildId = d.guildId;
     this.channelId = d.channelId;
     this.texturepack = d.texturepack;
     this.won = d.won;
     this.exploded = d.exploded;
     this.totalMineCounts = d.totalMineCounts;
+    this.hadError = d.hadError;
   }
 
   save() {
@@ -78,6 +95,46 @@ class MinesweeperBoard {
     }).catch((err)=>{
       console.error(`Failed to save board ${$t.id} lol`);
       console.error(err);
+    });
+  }
+
+  load() {
+    let $t=this;
+    return new Promise((resolve, reject)=>{
+      fs.readFile(path.join($t.bot.boardDataPath,$t.id+".json"), { encoding: 'utf8' }).then(d=>{
+        $t.loadRawData(JSON.parse(d));
+        $t.getChannel().then(x=>{
+          var embed1 = new Discord.MessageEmbed()
+            .setColor("#9D2230")
+            .setAuthor("Minesweeper!", $t.bot.jsonfile.logoQuestion)
+            .setTitle("Reloading Game")
+            .setDescription([
+              'The bot was restarted and this board is being loaded from the last saved state.',
+              'The board will be displayed when it is ready.'
+            ].join('\n'));
+
+          // This is probably just a hack?
+          x.send({embeds:[embed1]}).then(m=>{
+            $t.displayBoard({reply:a=>{
+              m.edit({embeds:[embed1,...a.embeds],files:a.files});
+              return new Promise((resolve,reject)=>{
+                resolve({edit:a=>{
+                  return m.edit({embeds:[embed1,...a.embeds],files:a.files});
+                }});
+              });
+            }});
+            resolve();
+          });
+        }).catch((err)=>{
+          console.error(`Failed to load channel for board: ${$t.id}`);
+          console.error(err);
+          reject(err);
+        });
+      }).catch((err)=>{
+        console.error(`Failed to load board ${$t.id} lol`);
+        console.error(err);
+        reject(err);
+      });
     });
   }
 
@@ -199,6 +256,19 @@ class MinesweeperBoard {
   }
 
   delete() {
+    let $t=this;
+    let p = path.join($t.bot.boardDataPath,$t.id+".json");
+    fs.writeFile(p,"finished", { encoding: 'utf8' }).then(()=>{
+      fs.rm(p).then(()=>{
+        /* good vibes */
+      }).catch(err=>{
+        console.error(`Error deleting old board data for ${$t.id} but the old data was voided`);
+        console.error(err);
+      });
+    }).catch(err=>{
+      console.error(`Error void old board data for ${$t.id} this game could be regenerated at a previous state if the bot restarts`);
+      console.error(err);
+    });
     this.bot.deleteBoard(this.id);
   }
 

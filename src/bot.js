@@ -16,7 +16,7 @@ const myServer = require('./server');
 const loadingconfig = require('./config.json');
 
 const basedir = __dirname;
-const datadir = path.join(__dirname, ".data");
+const datadir = path.join(basedir, "..", ".data");
 const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
 const boardDataPath = path.join(datadir,'Boards');
@@ -73,7 +73,6 @@ client.on("ready", () => {
   console.log(`Do \`>credits\` to see the people who made this crazy bot`);
   console.log(`Do \`>deploy guild\` to setup slash commands in the guild`);
   bot = new MinesweeperBot(client, myServer, options);
-  bot.start();
 
   myServer.sendMinesweeperBot(bot);
   myServer.sendBotData({tag: client.user.tag});

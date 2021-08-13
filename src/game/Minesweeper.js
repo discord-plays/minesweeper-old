@@ -1,11 +1,13 @@
 const path = require("path");
 const fs = require("fs");
+const glob = require("glob");
 const Discord = require("discord.js");
 const Assets = require('./Assets');
 const CommandsList = require("./CommandsList");
 const Board = require('./Board');
 const MenuController = require('../ui/Controller');
 const ModLoader = require("./ModLoader");
+
 const TotalResources = 1;
 const defaultGuildSettings = {
   prefix: '>'
@@ -30,17 +32,17 @@ class MinesweeperBot {
     for (var i = 0; i < k.length; i++) $t[k[i]] = options[k[i]];
 
     this.__assets = new Assets(this.basedir);
-    this.__assets.load().then(() => {
+    let loadingAssets = this.__assets.load().then(() => {
       console.log("Loaded assets list");
       $t.loadedresources++;
     });
     this.__commandslist = new CommandsList(this.basedir);
-    this.__commandslist.load().then(() => {
+    let loadingCommands = this.__commandslist.load().then(() => {
       console.log("Loaded commands list");
       $t.loadedcommands++;
     });
     this.__missionslist = new MissionsList(this.basedir);
-    this.__missionslist.load().then(() => {
+    let loadingMissions = this.__missionslist.load().then(() => {
       console.log("Loaded missions list");
       $t.loadedmissions++;
     });
@@ -50,8 +52,12 @@ class MinesweeperBot {
     this.__flags = {};
 
     this.modLoader = new ModLoader(this,this.basedir);
-    this.modLoader.load().then(()=>{
+    let loadingMods = this.modLoader.load().then(()=>{
       if (DEBUG_LOGGING) console.log(this.__mines);
+    });
+
+    Promise.all([loadingAssets, loadingCommands, loadingMissions, loadingMods]).then(x=>{
+      $t.start();
     });
   }
 
@@ -101,7 +107,7 @@ class MinesweeperBot {
     this.__flags[mod.id].push(mine);
   }
 
-  startGame(channel, j, replyFunc) {
+  startGame(channel, j, replyFunc=null) {
     // get the guild and channel ids
     let guildId, channelId;
     [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
@@ -113,12 +119,10 @@ class MinesweeperBot {
     let ySize = parseInt(j.board.height);
     if (isNaN(xSize) || isNaN(ySize)) throw new Error("Error: Invalid board size!");
 
-    if (xSize <= 0 || ySize <= 0) {
-      throw new Error("Error: Board too small!");
-    }
-    if (xSize > this.maxBoardX || ySize > this.maxBoardY) {
-      throw new Error("Error: Board too big!");
-    }
+    if (xSize <= 2 || ySize <= 2)
+      throw new Error("Error: Board too small! The width and height must be bigger than 2.");
+    if (xSize > this.maxBoardX || ySize > this.maxBoardY)
+      throw new Error(`Error: Board too big! The board can't be bigger than (${this.maxBoardX}, ${this.maxBoardY}).`);
 
     var k = Object.keys(j.mines);
     let m = [];
@@ -135,7 +139,8 @@ class MinesweeperBot {
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
-    board.displayBoard({reply:(...x)=>channel.send(...x)});
+    if(replyFunc == null) replyFunc = {reply:(...x)=>channel.send(...x)};
+    board.displayBoard(replyFunc);
   }
 
   getMine(ref) {
@@ -182,11 +187,16 @@ class MinesweeperBot {
     this.updateStatus();
   }
 
-  updateStatus() {
+  updateStatus(isReloading=false) {
     var $t = this;
-    $t.client.user.setStatus("online");
-    $t.client.user.setActivity($t.updateActivityVariables($t.jsonfile.status.activity), {
-      type: $t.jsonfile.status.presence.toUpperCase()
+    $t.client.user.setPresence({
+      activities: [
+        {
+          name: $t.updateActivityVariables(isReloading ? $t.jsonfile.status.reloading : $t.jsonfile.status.activity),
+          type: $t.jsonfile.status.presence.toUpperCase()
+        }
+      ],
+      status: (isReloading ? "dnd" : "online")
     });
   }
 
@@ -210,7 +220,46 @@ class MinesweeperBot {
 
   start() {
     console.log("I think the bot is starting");
-    this.updateStatus();
+    this.updateStatus(true);
+
+    let $t = this;
+    this.load().then(x=>{
+      Promise.allSettled(x.map(y=>$t.loadASingleBoard($t,y))).then(results=>{
+        results.forEach((result, num)=>{
+          if(result.status == "fulfilled") {
+            console.log(`Reloaded the board: ${x[num]}`);
+          } else if(result.status == "rejected") {
+            console.error(`Failed to load the board ${x[num]} due to:`);
+            console.error(result.reason);
+          }
+        });
+        this.updateStatus();
+      });
+    });
+  }
+
+  async loadASingleBoard($t,id) {
+    if ($t.isBoard(id)) throw new Error("Already a board running in this channel");
+    console.log("Reloading board with id: "+id);
+    $t.__boards[id] = new Board($t, id);
+    await $t.__boards[id].load();
+  }
+
+  load() {
+    let $t=this;
+    const regex = /^.*?(?<id>(?:dm|[0-9]+)-[0-9]+)\.json$/g;
+    return new Promise((resolve, reject) => {
+      glob(path.join($t.boardDataPath,'*.json'), (err, files) => {
+        if (err) return reject();
+        if (DEBUG_LOGGING) console.log(files);
+        let f=[];
+        for (var i = 0; i < files.length; i++) {
+          let l = files[i].replace(regex,'$1');
+          f.push(l === files[i] ? null : l);
+        }
+        resolve(f.filter(x=>x!==null));
+      });
+    });
   }
 
   sendInvalidOptions(command, msg) {

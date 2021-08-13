@@ -1,4 +1,4 @@
-const { messageCommand, interactionCommand, options } = require('./start');
+const { messageCommand, interactionCommand, help, example, options } = require('./start');
 
 function playMessage(bot, msg, args = []) {
   if (args.length > 1) return bot.sendInvalidOptions("play", msg);
@@ -9,12 +9,8 @@ function playInteraction(bot, interaction) {
   interactionCommand(bot, interaction);
 }
 
-var helpExample = [
-  "`>play`"
-];
-var helpText = [
-  "Attempts to start a new board in the current channel"
-];
+var helpExample = example.map(x=>x.replace('>start','>play'));
+var helpText = help;
 var playOptions = options;
 
 module.exports = {

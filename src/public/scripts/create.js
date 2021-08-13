@@ -82,7 +82,6 @@ $(document).ready(function () {
         console.error(err);
         $("#start-button").notify("There was an error creating the board!", "error");
       }
-    })
-    console.log(generate_json());
+    });
   });
-})
+});

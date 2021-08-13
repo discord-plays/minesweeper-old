@@ -3,10 +3,10 @@
 /* End of seed random source */
 
 class randomgen {
-  constructor(seed) {
+  constructor(seed, live=null) {
     this.seed=seed;
-    this.live=seed;
-    this.r=new Math.seedrandom(seed);
+    this.live=live || seed;
+    this.r=new Math.seedrandom(live);
   }
 
   getInt(max=1) {

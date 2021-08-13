@@ -13,7 +13,6 @@ class MissionsList extends Globber {
   }
 
   import(p) {
-    console.log(p);
     this.missions.push(p);
   }
 
@@ -22,7 +21,8 @@ class MissionsList extends Globber {
   }
 
   find(name) {
-    var z = this.missions.filter(x => this.getMissionName(x) == name);
+    name = name.toLowerCase();
+    var z = this.missions.filter(x => this.getMissionName(x).toLowerCase() == name);
     if (z.length != 1) return null;
     return z[0];
   }

@@ -34,6 +34,7 @@ function flagCommand(bot, guildId, channelId, replyFunc, args) {
         cell.visible = cell.flagged;
       }
     }
+    board.save();
     board.displayBoard(replyFunc);
   } else {
     return bot.sendMissingGame(replyFunc, guildId);
