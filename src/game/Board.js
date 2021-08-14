@@ -42,7 +42,8 @@ class MinesweeperBoard {
 
   async getChannel() {
     try {
-      return await this.bot.getChannel(this.channelId);
+      if(this.guildId == "dm") return await this.bot.getDMChannel(this.channelId);
+      else return await this.bot.getChannel(this.channelId);
     } catch (err) {
       throw new Error("Error: unable to find channel");
     }

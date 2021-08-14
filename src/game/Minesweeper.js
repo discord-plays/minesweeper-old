@@ -165,6 +165,13 @@ class MinesweeperBot {
     return await this.client.channels.fetch(id);
   }
 
+  async getDMChannel(id) {
+    let user = await this.client.userSettingsPath.fetch(id);
+    if(user == null) return null;
+    let dm = await user.createDM();
+    return dm;
+  }
+
   getBoard(id) {
     if (this.isBoard(id)) return this.__boards[id];
     else return null;
