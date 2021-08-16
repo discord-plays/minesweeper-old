@@ -1,38 +1,51 @@
-<div>
-  <p>Board:</p>
-  <ul>
-    <li>Width: <input class="board-num" num="width" type="number"></li>
-    <li>Height: <input class="board-num" num="height" type="number"></li>
-  </ul>
-</div>
-<div>
-  <p>Mines:</p>
-  <div>
-    <% let k = Object.keys(minedata); %>
-    <% if(k.length >= 1) { %>
-      <% for(let i=0;i<k.length;i++) { %>
-        <% let mod = minesweeper.modLoader.get(k[i]).mod; %>
-        <div>
-          <button data-rel="MineData-<%= mod.id.replace(/\./g,'_') %>" class="w3-button w3-block w3-left-align MineDataTab-all"><%= mod.name %></button>
-          <div data-rel="MineData-<%= mod.id.replace(/\./g, '_') %>-Dropdown" class="MineData-all w3-container">
-            <ul>
-              <% let k2 = minedata[mod.id]; %>
-              <% if(k2.length >= 1) { %>
-                <% for(let j=0;j<k2.length;j++) { %>
-                  <%- minedata[mod.id][j].getMineGeneratorEmbed(); %>
-                <% } %>
-              <% } else { %>
-                <div>Couldn't load any mine settings? Maybe the bot is broken?</div>
-              <% } %>
-            </ul>
-          </div>
-        </div>
-      <% } %>
-    <% } else { %>
-      <div>Couldn't load any mine categories? Maybe the bot is broken?</div>
-    <% } %>
+<% let k=Object.keys(minedata); %>
+<% if(k.length < 1) { %>
+  <div>A massive bug destroyed the bot. Sorry!!</div>
+<% } else { %>
+  <div id="board-selector" class="selector-page">
+    <p>Board:</p>
+    <ul>
+      <li>Width: <input class="board-num" num="width" type="number"></li>
+      <li>Height: <input class="board-num" num="height" type="number"></li>
+    </ul>
+    <button class="selector-button w3-button w3-teal" to="info-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="mod-selector">Next</button>
   </div>
-</div>
-<div>
-  <button id="start-button">Create board</button>
-</div>
+  <div id="mod-selector" class="selector-page">
+    <p>Mods:</p>
+    <p>
+      <% for(let i=0;i<k.length;i++) { %>
+        <% let mod=minesweeper.modLoader.get(k[i]).mod; %>
+        <div><label><input type="checkbox" class="MineModsCheckbox" data-mod="<%= mod.id.replace(/\./g,'_') %>"> <%= mod.name %></label></div>
+      <% } %>
+    </p>
+    <button class="selector-button w3-button w3-teal" to="board-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="option-selector">Next</button>
+  </div>
+  <div id="option-selector" class="selector-page">
+    <% for(let i=0;i<k.length;i++) { %>
+      <% let mod = minesweeper.modLoader.get(k[i]).mod; %>
+      <div id="MineData-<%= mod.id.replace(/\./g,'_') %>-Section">
+        <h3><%= mod.name %></h3>
+        <div class="w3-container">
+          <ul>
+            <% let k2 = minedata[mod.id]; %>
+            <% if(k2.length >= 1) { %>
+              <% for(let j=0;j<k2.length;j++) { %>
+                <%- minedata[mod.id][j].getMineGeneratorEmbed(); %>
+              <% } %>
+            <% } else { %>
+              <div>Couldn't load any mine settings? Maybe the bot is broken?</div>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    <% } %>
+    <button class="selector-button w3-button w3-teal" to="mod-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="start-selector">Next</button>
+  </div>
+  <div id="start-selector" class="selector-page">
+    <button id="start-button" class="w3-button w3-green">Play</button>
+    <button id="reset-button" class="w3-button w3-red">Create a new board</button>
+  </div>
+<% } %>

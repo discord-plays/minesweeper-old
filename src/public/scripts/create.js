@@ -33,28 +33,27 @@ function generate_json() {
   return data;
 }
 
-function activateMineDataDropdown(id) {
-  let v=$(`.MineDataTab-all[data-rel="${id}"]`);
-  let w=$(`.MineData-all[data-rel="${id}-Dropdown"]`);
-
-  $('.MineDataTab-all').removeClass('dropdown-open');
-  $('.MineData-all').stop().slideUp(500);
-
-  if(!w.hasClass('dropdown-open')) {
-    $('.MineData-all').removeClass('dropdown-open');
-    v.addClass('dropdown-open');
-    w.stop().addClass('dropdown-open').slideDown(500);
-  } else {
-    $('.MineData-all').removeClass('dropdown-open');
+function updateShowingModSections() {
+  var modCheckboxes = $(".MineModsCheckbox");
+  for (var i=0; i<modCheckboxes.length; i++) {
+    var modid = $(modCheckboxes[i]).data('mod');
+    var isEnabled = $(modCheckboxes[i]).is(':checked');
+    if(isEnabled) {
+      $("#MineData-" + modid + "-Section").show(0);
+    } else {
+      $("#MineData-" + modid + "-Section").hide(0);
+    }
   }
 }
 
 $(document).ready(function () {
-  $('.MineData-all').stop().slideUp(0);
+  $('.selector-page').stop().slideUp(0);
 
-  $('.MineDataTab-all').click(function() {
-    activateMineDataDropdown($(this).data('rel'));
-  })
+  $(".selector-button").click(function() {
+    updateShowingModSections();
+    $(this).parent().stop().slideUp();
+    $("#"+$(this).attr('to')).stop().slideDown();
+  });
 
   $("#start-button").click(function() {
     $("#start-button").notify("Creating board...", "info");
@@ -83,5 +82,10 @@ $(document).ready(function () {
         $("#start-button").notify("There was an error creating the board!", "error");
       }
     });
+  });
+
+  $("#reset-button").click(function() {
+    $('.selector-page').stop().slideUp();
+    $('#info-selector').stop().slideDown();
   });
 });

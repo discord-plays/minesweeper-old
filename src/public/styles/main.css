@@ -1,0 +1,9 @@
+.dpmMain {
+  width: 1000px;
+}
+
+@media only screen and (max-width: 1111.11px) {
+  .dpmMain {
+    width: 90vw;
+  }
+}

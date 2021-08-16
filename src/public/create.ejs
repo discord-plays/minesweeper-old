@@ -9,7 +9,6 @@
     <%- include('header') %>
 
     <script src="scripts/create.js"></script>
-    <link rel="stylesheet" href="styles/create.css">
   </head>
   <body class="opc-darkmode">
     <%- include('navbar') %>
@@ -26,10 +25,13 @@
               <% } else { %>
                 <p id="channel-info">Channel: Direct messages</p>
               <% } %>
-              <p>To change channel run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+              <div id="info-selector">
+                <p>To change channel run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
+                <button class="selector-button w3-button w3-teal w3-right" to="board-selector">Next</button>
+              </div>
               <div><%- include('generator', {minesweeper:minesweeper,minedata:minedata}) %></div>
             <% } else { %>
-              <p>Run `>start` in a server (using the configured prefix) or DMs and refresh for the channel to update here.</p>
+              <p>Run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
             <% } %>
           <% } %>
         <% } else { %>
@@ -37,6 +39,7 @@
           <p>The bot has not started yet.</p>
         <% } %>
       </div>
+      <div style="height:30px;"></div>
     </div>
   </body>
 </html>
