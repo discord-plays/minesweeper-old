@@ -1,6 +1,7 @@
 const DEBUG = require('./debug');
 const DEBUG_LOGGING = require('./debug_logging');
 const CREDITS = require('./credits.json');
+const TIPS = require('./tips.json');
 const { version } = require('../package.json');
 
 const path = require("path");
@@ -50,6 +51,7 @@ const options = {
   DEBUG,
   DEBUG_LOGGING,
   CREDITS,
+  TIPS,
   jsonfile,
   maxBoardX,
   maxBoardY,

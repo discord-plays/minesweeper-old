@@ -1,7 +1,7 @@
 const { messageCommand, interactionCommand, help, example, options } = require('./start');
 
 function playMessage(bot, msg, args = []) {
-  if (args.length > 1) return bot.sendInvalidOptions("play", msg);
+  if (args.length != 0 && args.length != 1 && args.length != 3) return bot.sendInvalidOptions("play", msg);
   messageCommand(bot, msg, args);
 }
 

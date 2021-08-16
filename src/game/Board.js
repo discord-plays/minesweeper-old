@@ -7,8 +7,8 @@ const { promises : fs } = require("fs");
 const path = require('path');
 
 class MinesweeperBoard {
-  constructor(bot, boardId, guildId=null, channelId=null, width, height, seed, texturepack) {
-    if(guildId === null && channelId === null) {
+  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack) {
+    if(guildId === null && channelId === null && userId === null) {
       // smaller constructor for reloading board
       this.id = boardId;
       this.bot = bot;
@@ -23,6 +23,7 @@ class MinesweeperBoard {
       this.id = boardId;
       this.guildId = guildId;
       this.channelId = channelId;
+      this.userId = userId;
       this.texturepack = texturepack;
       this.bot = bot;
       this.won = false;
@@ -42,9 +43,14 @@ class MinesweeperBoard {
 
   async getChannel() {
     try {
-      if(this.guildId == "dm") return await this.bot.getDMChannel(this.channelId);
+      if(this.guildId == "dm") {
+        let dm = await this.bot.getDMChannel(this.userId);
+        this.channelId = dm.id;
+        return dm;
+      }
       else return await this.bot.getChannel(this.channelId);
     } catch (err) {
+      console.error(err);
       throw new Error("Error: unable to find channel");
     }
   }
@@ -58,6 +64,7 @@ class MinesweeperBoard {
       id: this.id,
       guildId: this.guildId,
       channelId: this.channelId,
+      userId: this.userId,
       texturepack: this.texturepack,
       won: this.won,
       exploded: this.exploded,
@@ -83,6 +90,7 @@ class MinesweeperBoard {
     this.height = d.height;
     this.guildId = d.guildId;
     this.channelId = d.channelId;
+    this.userId = d.userId;
     this.texturepack = d.texturepack;
     this.won = d.won;
     this.exploded = d.exploded;
@@ -481,7 +489,7 @@ class MinesweeperBoard {
     return new Discord.MessageEmbed()
       .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
       .setTitle(`Standard (${$t.width}x${$t.height})`)
-      .setDescription(">dig [A1] to dig | >flag [A1] (S,D,T,A) to flag")
+      .setDescription($t.bot.generateTip())
       .addField("Seed:", `${$t.seed}`)
       .addField("Mines:", $t.getMineEmbedContent());
   }

@@ -1,0 +1,20 @@
+[
+  {
+    "text": "Use `/start <width> <height> <mines>` to start a vanilla Minesweeper game"
+  },
+  {
+    "text": "Use `/board` to show the board for the current channel"
+  },
+  {
+    "text": "Use `/forfeit` to annoy your friends"
+  },
+  {
+    "text": "I've heard that `/kill` helps destroy bugs"
+  },
+  {
+    "text": "Want to see who made me? Try `/credits`"
+  },
+  {
+    "text": "Want to use the bot in your own server? Maybe `/invite` will come in handy"
+  }
+]

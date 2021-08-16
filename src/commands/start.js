@@ -9,7 +9,7 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
       throw new Error(`Error: Mission \`${args[0]}\` doesn't exist`);
     } else {
       mission.command(d=>{
-        bot.startGame(outChannel, d, replyFunc);
+        bot.startGame(outChannel, author, d, replyFunc);
       });
     }
   } else if(args.length == 3) {
@@ -21,7 +21,7 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
     if(isNaN(numMines)) throw new Error(`Error: Number of mines must be a positive integer`);
 
     startSimpleGame(numMines,width,height,d=>{
-      bot.startGame(outChannel, d, replyFunc);
+      bot.startGame(outChannel, author, d, replyFunc);
     });
   } else {
     var embed = new Discord.MessageEmbed()
@@ -47,7 +47,7 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
 }
 
 function startMessage(bot, msg, args = []) {
-  if (args.length > 1) return bot.sendInvalidOptions("start", msg);
+  if (args.length != 0 && args.length != 1 && args.length != 3) return bot.sendInvalidOptions("start", msg);
   startCommand(bot, {reply:a=>{
     if(typeof(a)==="string") a = {content:a};
     if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};

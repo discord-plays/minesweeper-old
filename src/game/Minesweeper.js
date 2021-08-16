@@ -4,17 +4,18 @@ const glob = require("glob");
 const Discord = require("discord.js");
 const Assets = require('./Assets');
 const CommandsList = require("./CommandsList");
+const MissionsList = require("./MissionsList");
 const Board = require('./Board');
 const MenuController = require('../ui/Controller');
 const ModLoader = require("./ModLoader");
+const randomarrayitem = require("../utils/randomarrayitem");
+const DEBUG_LOGGING = require('../debug_logging');
 
 const TotalResources = 1;
 const defaultGuildSettings = {
   prefix: '>'
 }
 
-const DEBUG_LOGGING = require('../debug_logging');
-const MissionsList = require("./MissionsList");
 
 class MinesweeperBot {
   constructor(client, server, options) {
@@ -107,7 +108,7 @@ class MinesweeperBot {
     this.__flags[mod.id].push(mine);
   }
 
-  startGame(channel, j, replyFunc=null) {
+  startGame(channel, user, j, replyFunc=null) {
     // get the guild and channel ids
     let guildId, channelId;
     [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
@@ -135,7 +136,7 @@ class MinesweeperBot {
     // Change seed for tournament or something?
     let seed = Math.floor(Math.random()*Math.pow(10,15));
 
-    var board = this.createBoard(boardId, guildId, channelId, xSize, ySize, seed, "%%default%%");
+    var board = this.createBoard(boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%");
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
@@ -166,7 +167,7 @@ class MinesweeperBot {
   }
 
   async getDMChannel(id) {
-    let user = await this.client.userSettingsPath.fetch(id);
+    let user = await this.client.users.fetch(id);
     if(user == null) return null;
     let dm = await user.createDM();
     return dm;
@@ -181,10 +182,14 @@ class MinesweeperBot {
     return Object.keys(this.__boards).includes(id);
   }
 
-  createBoard(id, guildId, channelId, width, height, seed, texturepack) {
+  generateTip() {
+    return randomarrayitem(this.TIPS).text;
+  }
+
+  createBoard(id, guildId, channelId, userId, width, height, seed, texturepack) {
     if (this.isBoard(id)) return false;
     console.log("Creating board with seed: "+seed);
-    this.__boards[id] = new Board(this, id, guildId, channelId, width, height, seed, texturepack);
+    this.__boards[id] = new Board(this, id, guildId, channelId, userId, width, height, seed, texturepack);
     this.updateStatus();
     return this.__boards[id];
   }
