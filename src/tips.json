@@ -1,20 +1,23 @@
 [
   {
-    "text": "Use `/start <width> <height> <mines>` to start a vanilla Minesweeper game"
+    "text": "Pro Tip: Use `/start <width> <height> <mines>` to start a vanilla Minesweeper game!"
   },
   {
-    "text": "Use `/board` to show the board for the current channel"
+    "text": "Pro Tip: Use `/forfeit` to end the current game!"
   },
   {
-    "text": "Use `/forfeit` to annoy your friends"
+    "text": "Board bugged out? Use '/kill' to remove it from the channel."
   },
   {
-    "text": "I've heard that `/kill` helps destroy bugs"
+    "text": "Want to see who made me? Try `/credits`!"
   },
   {
-    "text": "Want to see who made me? Try `/credits`"
+    "text": "Want to use the bot in your own server? Try `/invite`."
   },
   {
-    "text": "Want to use the bot in your own server? Maybe `/invite` will come in handy"
+    "text": "Having a mine density of over 30% will cause you problems."
+  },
+  {
+    "text": "Try our hand-made missions by typing `/missions`."
   }
 ]
