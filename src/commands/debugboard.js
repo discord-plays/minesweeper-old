@@ -10,7 +10,10 @@ function debugboardCommand(bot, msg, args = []) {
     var c = [];
     for (var i = 0; i < h; i++) {
       for (var j = 0; j < w; j++) {
-        c.push(fancyPrint(j + 1, i + 1, board.get(j, i)));
+        let cell = board.get(j,i);
+        if(cell.extra == "#") continue;
+        if(cell.number == Number.MAX_SAFE_INTEGER && !cell.flagged && !cell.mined) continue;
+        c.push(fancyPrint(j + 1, i + 1, cell));
       }
     }
 
@@ -31,7 +34,7 @@ function debugboardCommand(bot, msg, args = []) {
 }
 
 function fancyPrint(i, j, cell) {
-  return `X: ${i} Y: ${j} Mine: ${cell.mined ? cell.mine.id : null} Flag: ${cell.flagged ? cell.flag.id : null} Number: ${cell.number} Visible: ${cell.visible}`;
+  return `X: ${i} Y: ${j} Mine: ${cell.mined ? cell.mine.id : null} Flag: ${cell.flagged ? cell.flag.id : null} Number: ${cell.number} Visible: ${cell.visible} Extra: ${cell.extra}`;
 }
 
 var helpExample = [

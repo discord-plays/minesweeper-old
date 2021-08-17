@@ -9,7 +9,7 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
       throw new Error(`Error: Mission \`${args[0]}\` doesn't exist`);
     } else {
       mission.command(d=>{
-        bot.startGame(outChannel, author, d, replyFunc);
+        bot.startGame(outChannel, author, d.customBoardId, d, replyFunc);
       });
     }
   } else if(args.length == 3) {
@@ -21,7 +21,7 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
     if(isNaN(numMines)) throw new Error(`Error: Number of mines must be a positive integer`);
 
     startSimpleGame(numMines,width,height,d=>{
-      bot.startGame(outChannel, author, d, replyFunc);
+      bot.startGame(outChannel, author, "vanilla", d, replyFunc);
     });
   } else {
     var embed = new Discord.MessageEmbed()

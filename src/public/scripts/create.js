@@ -1,7 +1,8 @@
 function generate_json() {
   var data = {
     mines: {},
-    board: {}
+    board: {},
+    customBoardId: $("#MineBoards").val()
   }
 
   var $mines = $(".mine-generator-embed")
@@ -65,11 +66,11 @@ $(document).ready(function () {
       success: function(d) {
         let j=JSON.parse(d);
         if(j.state==1)
-          $("#start-button").notify("The board was created go back to Discord to play!", "success");
+          $("#start-button").notify("The board was created, go back to Discord to play!", "success");
         else if(j.state==2)
           $("#start-button").notify("The board was added to the channel queue. The bot will notify you when the game starts!", "success");
         else if(j.state==3)
-          $("#start-button").notify("You need to run `>start` in a channel first so the bot knows where to create the game.", "success");
+          $("#start-button").notify("You need to run `/start` in a channel first so the bot knows where to create the game.", "success");
         else if(j.state==0)
           $("#start-button").notify("Your board was rejected. Maybe you don't have permission to create boards for this channel?", "error");
         else if(j.state==999)

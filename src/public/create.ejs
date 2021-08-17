@@ -29,7 +29,7 @@
                 <p>To change channel run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
                 <button class="selector-button w3-button w3-teal w3-right" to="board-selector">Next</button>
               </div>
-              <div><%- include('generator', {minesweeper:minesweeper,minedata:minedata}) %></div>
+              <div><%- include('generator', {minesweeper,minedata,customboarddata}) %></div>
             <% } else { %>
               <p>Run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
             <% } %>

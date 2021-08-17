@@ -6,8 +6,12 @@ class Mod {
     var $t=this;
     this.mines = {add: mine => {
       mine.id = `${$t.id}.${mine.id}`;
-      this.minesweeper.addMine($t,mine);
+      $t.minesweeper.addMine($t,mine);
       return mine;
+    }};
+    this.boards = {add: board => {
+      board.id = `${$t.id}.${board.id}`;
+      $t.minesweeper.addBoard($t,board);
     }};
   }
 }

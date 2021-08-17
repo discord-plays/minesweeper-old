@@ -48,6 +48,7 @@ class MinesweeperBot {
       $t.loadedmissions++;
     });
 
+    this.__customboards = {};
     this.__boards = {};
     this.__mines = {};
     this.__flags = {};
@@ -62,6 +63,15 @@ class MinesweeperBot {
     });
   }
 
+  getModIds() {
+    return this.modLoader.mods.map(x=>x.mod.id);
+  }
+
+  getMod(id) {
+    let m = this.modLoader.get(id);
+    return m != null ? m.mod : null;
+  }
+
   getMines() {
     return Object.values(this.__mines).flatMap(x=>x);
   }
@@ -72,6 +82,14 @@ class MinesweeperBot {
 
   getFlags() {
     return Object.values(this.__flags).flatMap(x=>x);
+  }
+
+  getBoards() {
+    return Object.values(this.__customboards).flatMap(x=>x);
+  }
+
+  getBoardsLayered() {
+    return this.__customboards;
   }
 
   getFlagsLayered() {
@@ -108,7 +126,13 @@ class MinesweeperBot {
     this.__flags[mod.id].push(mine);
   }
 
-  startGame(channel, user, j, replyFunc=null) {
+  addBoard(mod, board) {
+    if(!this.__customboards.hasOwnProperty(mod.id)) this.__customboards[mod.id] = [];
+    board.mod = mod;
+    this.__customboards[mod.id].push(board);
+  }
+
+  startGame(channel, user, customBoardId, j, replyFunc=null) {
     // get the guild and channel ids
     let guildId, channelId;
     [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
@@ -136,7 +160,7 @@ class MinesweeperBot {
     // Change seed for tournament or something?
     let seed = Math.floor(Math.random()*Math.pow(10,15));
 
-    var board = this.createBoard(boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%");
+    var board = this.createBoard(customBoardId, boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%");
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
@@ -186,10 +210,24 @@ class MinesweeperBot {
     return randomarrayitem(this.TIPS).text;
   }
 
-  createBoard(id, guildId, channelId, userId, width, height, seed, texturepack) {
+  createBoard(customBoardId, id, guildId, channelId, userId, width, height, seed, texturepack) {
     if (this.isBoard(id)) return false;
     console.log("Creating board with seed: "+seed);
-    this.__boards[id] = new Board(this, id, guildId, channelId, userId, width, height, seed, texturepack);
+
+    var customBoard;
+    if(customBoardId == "vanilla") customBoard = Board;
+    else {
+      let f=this.getBoards().filter(x=>x.id==customBoardId);
+      if(f.length == 1) {
+        customBoard = f[0];
+      }
+    }
+
+    if(customBoard == undefined || customBoard == null) {
+      throw new Error("Error: Failed to find board type");
+    }
+
+    this.__boards[id] = new customBoard(this, id, guildId, channelId, userId, width, height, seed, texturepack);
     this.updateStatus();
     return this.__boards[id];
   }

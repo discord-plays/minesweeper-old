@@ -78,7 +78,8 @@ app.get("/create", (req, res, ...a)=>{
         tag: mySession.user.tag,
         channel: userChannel
       },
-      minedata: bot.getMinesLayered()
+      minedata: bot.getMinesLayered(),
+      customboarddata: bot.getBoardsLayered()
     });
   })
 });
@@ -115,12 +116,12 @@ app.post("/create", express.json(), (req, res, ...a)=>{
       let userChannel = users.hasOwnProperty(mySession.user.id) ? users[mySession.user.id].channel : undefined;
 
       if(userChannel == undefined) {
-        res.status(200).send(JSON.stringify({state:4}));
+        res.status(200).send(JSON.stringify({state:3}));
         return;
       }
 
       try {
-        bot.startGame(userChannel, mySession.user, j);
+        bot.startGame(userChannel, mySession.user, j.customBoardId || "vanilla", j);
         res.status(200).send(JSON.stringify({
           state: 1
         }))

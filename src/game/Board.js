@@ -8,6 +8,8 @@ const path = require('path');
 
 class MinesweeperBoard {
   constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack) {
+    this.customBoardId = "vanilla";
+
     if(guildId === null && channelId === null && userId === null) {
       // smaller constructor for reloading board
       this.id = boardId;
@@ -57,6 +59,7 @@ class MinesweeperBoard {
 
   getRawData() {
     return {
+      customBoardId: this.customBoardId || "vanilla",
       board: this.board.data,
       seed: { base: this.seed, live: this.r.live },
       width: this.width,
@@ -75,6 +78,7 @@ class MinesweeperBoard {
 
   loadRawData(d) {
     let $t=this;
+    this.customBoardId = d.customBoardId || "vanilla";
     this.board = ndarray(d.board.map(x=>{
       let y=new Cell($t);
       y.mine = $t.bot.getMineById(x[0]);
@@ -204,6 +208,10 @@ class MinesweeperBoard {
     }
   }
 
+  isInvalidCell(x,y) {
+    return false;
+  }
+
   generate(totalMineCounts) {
     var $t = this,
       xRand = 0,
@@ -233,7 +241,7 @@ class MinesweeperBoard {
     for (var i = 0; i < totalMines; i++) {
       xRand = this.r.getInt(this.width-1);
       yRand = this.r.getInt(this.height-1);
-      while (previousMineCoords.filter(x => x[0] == xRand && x[1] == yRand).length >= 1) {
+      while (this.isInvalidCell(xRand,yRand) || previousMineCoords.filter(x => x[0] == xRand && x[1] == yRand).length >= 1) {
         xRand = this.r.getInt(this.width-1);
         yRand = this.r.getInt(this.height-1);
       }
@@ -325,7 +333,8 @@ class MinesweeperBoard {
       if (toCheck[i][0] < 0 || toCheck[i][1] < 0 || toCheck[i][0] >= $t.width || toCheck[i][1] >= $t.height) continue;
       let n = $t.get(toCheck[i][0], toCheck[i][1]);
       if(n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
-      n.extra = mine.calculateExtra(n.number);
+      let newExtra = mine.calculateExtra(n.number);
+      n.extra = newExtra || n.extra;
       n.number = mine.calculateValue(n.number);
     }
   }
@@ -521,6 +530,8 @@ class MinesweeperBoard {
   }
 
   async calculateCurrentCellView(textures, cell, showExploded = true) {
+    if(cell.extra == "#") return await textures.getTexture("discordplaysminesweeper.base/border/empty");
+
     if (showExploded && cell.mined) return await cell.mine.getMineTexture(textures);
     if (!cell.visible) return await textures.raisedCell();
     if (cell.flagged) return await cell.flag.getFlagTexture(textures);
