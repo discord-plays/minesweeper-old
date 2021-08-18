@@ -15,6 +15,7 @@ function powerOf2Mission(startBoard) {
 }
 
 module.exports = {
+  name: 'Power of 2',
   command: powerOf2Mission,
   description: 'All mines are a power of 2'
 };

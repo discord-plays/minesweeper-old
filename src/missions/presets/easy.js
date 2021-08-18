@@ -12,6 +12,7 @@ function easyMission(startBoard) {
 }
 
 module.exports = {
+  name: 'Easy',
   command: easyMission,
-  description: 'Easy'
+  description: 'Ten single mines'
 };

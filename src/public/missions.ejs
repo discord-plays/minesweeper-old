@@ -20,7 +20,7 @@
             <ul>
               <% for(let i=0;i<k.length;i++) { %>
                 <% let mission = minesweeper.findMission(k[i]); %>
-                <li><%= k[i] %> - <%= mission.description %></li>
+                <li><%= mission.name %> (<%= k[i] %>) - <%= mission.description %></li>
               <% } %>
             </ul>
           <% } else { %>

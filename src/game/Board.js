@@ -7,7 +7,7 @@ const { promises : fs } = require("fs");
 const path = require('path');
 
 class MinesweeperBoard {
-  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack) {
+  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack, mission=null) {
     this.customBoardId = "vanilla";
 
     if(guildId === null && channelId === null && userId === null) {
@@ -32,6 +32,7 @@ class MinesweeperBoard {
       this.exploded = false;
       this.cached = null;
       this.hadError = false;
+      this.missionName = this.mission == null ? null : this.mission.name;
 
       for (var i = 0; i < this.width; i++)
         for (var j = 0; j < this.height; j++)
@@ -72,7 +73,8 @@ class MinesweeperBoard {
       won: this.won,
       exploded: this.exploded,
       totalMineCounts: this.totalMineCounts,
-      hadError: this.hadError
+      hadError: this.hadError,
+      missionName: this.missionName
     }
   }
 
@@ -104,6 +106,7 @@ class MinesweeperBoard {
     this.exploded = d.exploded;
     this.totalMineCounts = d.totalMineCounts;
     this.hadError = d.hadError;
+    this.missionName = d.missionName;
   }
 
   save() {
@@ -513,12 +516,15 @@ class MinesweeperBoard {
   generateBoardEmbed() {
     var $t = this;
     let mineContent = $t.getMineEmbedContent();
-    return new Discord.MessageEmbed()
+    let embed = new Discord.MessageEmbed()
       .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
       .setTitle(`Standard (${$t.width}x${$t.height})`)
       .setDescription($t.bot.generateTip())
       .addField("Seed:", `${$t.seed}`)
       .addField("Mines:", mineContent.trim() == "" ? "no mines?" : mineContent);
+    if($t.missionName != null && $t.missionName.trim() != "")
+      embed.addField("Mission:", `${$t.missionName}`);
+    return embed;
   }
 
   getMineEmbedContent() {
