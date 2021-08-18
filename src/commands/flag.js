@@ -1,5 +1,5 @@
-function flagCommand(bot, guildId, channelId, replyFunc, args) {
-  var boardId = guildId + "-" + channelId;
+function flagCommand(bot, guildId, channelId, userId, replyFunc, args) {
+  let boardId = `${guildId}-${guildId == "dm" ? userId : channelId}`;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
     var firstItem = args.shift();
@@ -44,7 +44,7 @@ function flagCommand(bot, guildId, channelId, replyFunc, args) {
 function flagMessage(bot, msg, args = []) {
   if (args.length < 1) return bot.sendInvalidOptions('flag', msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  flagCommand(bot, guildId, channelId, {reply:a=>{
+  flagCommand(bot, guildId, channelId, msg.author.id, {reply:a=>{
     if(typeof(a)==="string") a = {content:a};
     if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
     a.allowedMentions.repliedUser = false;
@@ -55,7 +55,7 @@ function flagMessage(bot, msg, args = []) {
 function flagInteraction(bot, interaction) {
   [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
   let data=interaction.options.getString("data").split(' ');
-  flagCommand(bot, guildId, channelId, interaction, data);
+  flagCommand(bot, guildId, channelId, interaction.user.id, interaction, data);
 }
 
 var helpExample = [

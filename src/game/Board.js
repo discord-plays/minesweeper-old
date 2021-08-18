@@ -80,13 +80,17 @@ class MinesweeperBoard {
     let $t=this;
     this.customBoardId = d.customBoardId || "vanilla";
     this.board = ndarray(d.board.map(x=>{
-      let y=new Cell($t);
-      y.mine = $t.bot.getMineById(x[0]);
-      y.flag = $t.bot.getFlagById(x[1]);
-      y.number = x[2] === null ? Number.MAX_SAFE_INTEGER : x[2];
-      y.visible = x[3];
-      y.extra = x[4];
-      return y;
+      if(x instanceof Cell) {
+        return x;
+      } else {
+        let y=new Cell($t);
+        y.mine = $t.bot.getMineById(x[0]);
+        y.flag = $t.bot.getFlagById(x[1]);
+        y.number = x[2] === null ? Number.MAX_SAFE_INTEGER : x[2];
+        y.visible = x[3];
+        y.extra = x[4];
+        return y;
+      }
     }), [d.width, d.height]);
     this.seed = d.seed.base;
     this.r = new randomgen(d.seed.base, d.seed.live);
@@ -117,35 +121,48 @@ class MinesweeperBoard {
     return new Promise((resolve, reject)=>{
       fs.readFile(path.join($t.bot.boardDataPath,$t.id+".json"), { encoding: 'utf8' }).then(d=>{
         $t.loadRawData(JSON.parse(d));
-        $t.getChannel().then(x=>{
-          var embed1 = new Discord.MessageEmbed()
-            .setColor("#9D2230")
-            .setAuthor("Minesweeper!", $t.bot.jsonfile.logoQuestion)
-            .setTitle("Reloading Game")
-            .setDescription([
-              'The bot was restarted and this board is being loaded from the last saved state.',
-              'The board will be displayed when it is ready.'
-            ].join('\n'));
-
-          // This is probably just a hack?
-          x.send({embeds:[embed1]}).then(m=>{
-            $t.displayBoard({reply:a=>{
-              m.edit({embeds:[embed1,...a.embeds],files:a.files});
-              return new Promise((resolve,reject)=>{
-                resolve({edit:a=>{
-                  return m.edit({embeds:[embed1,...a.embeds],files:a.files});
-                }});
-              });
-            }});
-            resolve();
-          });
-        }).catch((err)=>{
-          console.error(`Failed to load channel for board: ${$t.id}`);
-          console.error(err);
-          reject(err);
+        $t.postLoad().then(x=>{
+          resolve();
+        }).catch(reason=>{
+          reject(reason);
         });
       }).catch((err)=>{
         console.error(`Failed to load board ${$t.id} lol`);
+        console.error(err);
+        reject(err);
+      });
+    });
+  }
+
+  postLoad(isMoved=true,usersToInvite=null) {
+    let $t=this;
+    let z = {};
+    if(usersToInvite != null) z.content = usersToInvite.join(' ');
+    return new Promise((resolve, reject)=>{
+      $t.getChannel().then(x=>{
+        var embed1 = new Discord.MessageEmbed()
+          .setColor("#9D2230")
+          .setAuthor("Minesweeper!", $t.bot.jsonfile.logoQuestion)
+          .setTitle("Reloading Game")
+          .setDescription([
+            isMoved ? 'The board was moved from another channel and is being loaded from its last state' : 'The bot was restarted and this board is being loaded from the last saved state.',
+            'The board will be displayed when it is ready.'
+          ].join('\n'));
+  
+        // This is probably just a hack?
+        x.send({...z,embeds:[embed1]}).then(m=>{
+          $t.displayBoard({reply:a=>{
+            m.edit({...z,embeds:[embed1,...a.embeds],files:a.files});
+            return new Promise((resolve,reject)=>{
+              resolve({edit:a=>{
+                return m.edit({...z,embeds:[embed1,...a.embeds],files:a.files});
+              }});
+            });
+          }});
+          resolve();
+        });
+      }).catch((err)=>{
+        console.error(`Failed to load channel for board: ${$t.id}`);
         console.error(err);
         reject(err);
       });

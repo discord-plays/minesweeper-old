@@ -2,7 +2,7 @@ function debugboardCommand(bot, msg, args = []) {
   if (!bot.DEBUG) return;
   if (args.length > 0) return bot.sendInvalidOptions("debugboard", msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  var boardId = guildId + "-" + channelId;
+  let boardId = `${guildId}-${guildId == "dm" ? msg.author.id : channelId}`;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
     var w = board.width;

@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
-function valueofCommand(bot, guildId, channelId, replyFunc, args) {
-  var boardId = guildId + "-" + channelId;
+function valueofCommand(bot, guildId, channelId, userId, replyFunc, args) {
+  let boardId = `${guildId}-${guildId == "dm" ? userId : channelId}`;
   if (bot.isBoard(boardId)) {
     var board = bot.getBoard(boardId);
     let cells = [];
@@ -35,7 +35,7 @@ function valueofCommand(bot, guildId, channelId, replyFunc, args) {
 function valueofMessage(bot, msg, args = []) {
   if (args.length < 1) return bot.sendInvalidOptions('valueof', msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  valueofCommand(bot, guildId, channelId, {reply:a=>{
+  valueofCommand(bot, guildId, channelId, msg.author.id, {reply:a=>{
     if(typeof(a)==="string") a = {content:a};
     if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
     a.allowedMentions.repliedUser = false;
@@ -46,7 +46,7 @@ function valueofMessage(bot, msg, args = []) {
 function valueofInteraction(bot, interaction) {
   [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
   let data=interaction.options.getString("data").split(' ');
-  valueofCommand(bot, guildId, channelId, interaction, data);
+  valueofCommand(bot, guildId, channelId, interaction.user.id, interaction, data);
 }
 
 var helpExample = [

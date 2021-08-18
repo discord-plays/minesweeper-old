@@ -136,7 +136,7 @@ class MinesweeperBot {
     // get the guild and channel ids
     let guildId, channelId;
     [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
-    let boardId = `${guildId}-${channelId}`;
+    let boardId = `${guildId}-${guildId == "dm" ? user.id : channelId}`;
 
     if (this.isBoard(boardId)) throw new Error("Error: There is already a board running in this channel!");
 
@@ -365,7 +365,7 @@ class MinesweeperBot {
       if(that.processReceivedError(err, receivedMessage)) {
         // Swap hadError flag
         let [guildId, channelId] = [receivedMessage.guild == null ? "dm" : receivedMessage.guild.id, receivedMessage.channel.id];
-        let boardId = guildId + "-" + channelId;
+        let boardId = `${guildId}-${guildId == "dm" ? receivedMessage.author.id : channelId}`;
         if (that.isBoard(boardId)) that.getBoard(boardId).hadError = true;
       }
     }
@@ -384,7 +384,7 @@ class MinesweeperBot {
       if(that.processReceivedError(err, receivedInteraction)) {
         // Swap hadError flag
         let [guildId, channelId] = [receivedInteraction.guild == null ? "dm" : receivedInteraction.guild.id, receivedInteraction.channel.id];
-        let boardId = guildId + "-" + channelId;
+        let boardId = `${guildId}-${guildId == "dm" ? receivedInteraction.user.id : channelId}`;
         if (that.isBoard(boardId)) that.getBoard(boardId).hadError = true;
       }
     }

@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
-function killCommand(bot, guildId, channelId, replyFunc) {
-  let boardId = guildId + "-" + channelId;
+function killCommand(bot, guildId, channelId, userId, replyFunc) {
+  let boardId = `${guildId}-${guildId == "dm" ? userId : channelId}`;
   if (bot.isBoard(boardId)) {
     if(bot.getBoard(boardId).hadError) {
       bot.getBoard(boardId).delete();
@@ -23,7 +23,7 @@ function killCommand(bot, guildId, channelId, replyFunc) {
 function killMessage(bot, msg, args = []) {
   if (args.length > 0) return bot.sendInvalidOptions("kill", msg);
   [guildId, channelId] = [msg.guild == null ? "dm" : msg.guild.id, msg.channel.id];
-  killCommand(bot, guildId, channelId, {reply:a=>{
+  killCommand(bot, guildId, channelId, msg.author.id, {reply:a=>{
     if(typeof(a)==="string") a = {content:a};
     if(!a.hasOwnProperty("allowedMentions")) a.allowedMentions = {};
     a.allowedMentions.repliedUser = false;
@@ -33,7 +33,7 @@ function killMessage(bot, msg, args = []) {
 
 function killInteraction(bot, interaction) {
   [guildId, channelId] = [interaction.guild == null ? "dm" : interaction.guild.id, interaction.channel.id];
-  killCommand(bot, guildId, channelId, interaction);
+  killCommand(bot, guildId, channelId, interaction.user.id, interaction);
 }
 
 var helpExample = [
