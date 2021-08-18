@@ -134,7 +134,7 @@ class MinesweeperBoard {
     });
   }
 
-  postLoad(isMoved=true,usersToInvite=null) {
+  postLoad(isMoved=false,usersToInvite=null) {
     let $t=this;
     let z = {};
     if(usersToInvite != null) z.content = usersToInvite.join(' ');
