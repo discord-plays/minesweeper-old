@@ -512,12 +512,13 @@ class MinesweeperBoard {
 
   generateBoardEmbed() {
     var $t = this;
+    let mineContent = $t.getMineEmbedContent();
     return new Discord.MessageEmbed()
       .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
       .setTitle(`Standard (${$t.width}x${$t.height})`)
       .setDescription($t.bot.generateTip())
       .addField("Seed:", `${$t.seed}`)
-      .addField("Mines:", $t.getMineEmbedContent());
+      .addField("Mines:", mineContent.trim() == "" ? "no mines?" : mineContent);
   }
 
   getMineEmbedContent() {
