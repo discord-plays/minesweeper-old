@@ -7,7 +7,7 @@ const { promises : fs } = require("fs");
 const path = require('path');
 
 class MinesweeperBoard {
-  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack, mission=null) {
+  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack, missionName=null) {
     this.customBoardId = "vanilla";
 
     if(guildId === null && channelId === null && userId === null) {
@@ -32,7 +32,7 @@ class MinesweeperBoard {
       this.exploded = false;
       this.cached = null;
       this.hadError = false;
-      this.missionName = this.mission == null ? null : this.mission.name;
+      this.missionName = missionName;
 
       for (var i = 0; i < this.width; i++)
         for (var j = 0; j < this.height; j++)

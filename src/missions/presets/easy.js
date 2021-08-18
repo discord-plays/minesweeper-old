@@ -6,7 +6,8 @@ function easyMission(startBoard) {
     board: {
       width: 9,
       height: 9
-    }
+    },
+    customBoardId: 'vanilla'
   };
   startBoard(data);
 }

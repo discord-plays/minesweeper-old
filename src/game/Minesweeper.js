@@ -132,7 +132,7 @@ class MinesweeperBot {
     this.__customboards[mod.id].push(board);
   }
 
-  startGame(channel, user, customBoardId, j, replyFunc=null) {
+  startGame(channel, user, customBoardId, j, missionName, replyFunc=null) {
     // get the guild and channel ids
     let guildId, channelId;
     [guildId, channelId] = [(channel.guild == undefined || channel.guild == null) ? "dm" : channel.guild.id, channel.id];
@@ -160,7 +160,7 @@ class MinesweeperBot {
     // Change seed for tournament or something?
     let seed = Math.floor(Math.random()*Math.pow(10,15));
 
-    var board = this.createBoard(customBoardId, boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%");
+    var board = this.createBoard(customBoardId, boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%", missionName);
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
@@ -210,7 +210,7 @@ class MinesweeperBot {
     return randomarrayitem(this.TIPS).text;
   }
 
-  createBoard(customBoardId, id, guildId, channelId, userId, width, height, seed, texturepack) {
+  createBoard(customBoardId, id, guildId, channelId, userId, width, height, seed, texturepack, missionName=null) {
     if (this.isBoard(id)) return false;
     console.log("Creating board with seed: "+seed);
 
@@ -227,7 +227,7 @@ class MinesweeperBot {
       throw new Error("Error: Failed to find board type");
     }
 
-    this.__boards[id] = new customBoard(this, id, guildId, channelId, userId, width, height, seed, texturepack);
+    this.__boards[id] = new customBoard(this, id, guildId, channelId, userId, width, height, seed, texturepack, missionName);
     this.updateStatus();
     return this.__boards[id];
   }

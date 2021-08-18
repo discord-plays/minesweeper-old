@@ -9,7 +9,8 @@ function powerOf2Mission(startBoard) {
     board: {
       width: 16,
       height: 16
-    }
+    },
+    customBoardId: 'vanilla'
   };
   startBoard(data);
 }

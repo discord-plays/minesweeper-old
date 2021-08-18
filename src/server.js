@@ -121,7 +121,7 @@ app.post("/create", express.json(), (req, res, ...a)=>{
       }
 
       try {
-        bot.startGame(userChannel, mySession.user, j.customBoardId || "vanilla", j);
+        bot.startGame(userChannel, mySession.user, j.customBoardId || "vanilla", j, null);
         res.status(200).send(JSON.stringify({
           state: 1
         }))

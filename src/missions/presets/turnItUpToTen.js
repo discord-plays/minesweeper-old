@@ -15,7 +15,8 @@ function turnItUpToTenMission(startBoard) {
     board: {
       width: 25,
       height: 25
-    }
+    },
+    customBoardId: 'vanilla'
   };
   startBoard(data);
 }
