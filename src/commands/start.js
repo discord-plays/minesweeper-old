@@ -1,6 +1,10 @@
 const Discord = require("discord.js");
 const address = require('../address');
 
+const parseHMS = /^(?<hours>[0-9]+):(?<minutes>[0-9]+):(?<seconds>[0-9]+)$/m;
+const parseMS = /^(?<minutes>[0-9]+):(?<seconds>[0-9]+)$/m;
+const parseS = /^(?<seconds>[0-9]+)$/m;
+
 function startCommand(bot, replyFunc, outChannel, author, args) {
   bot.web.updateUserLastChannel(author, outChannel);
   if(args.length == 1) {
@@ -20,7 +24,28 @@ function startCommand(bot, replyFunc, outChannel, author, args) {
     if(isNaN(height)) throw new Error(`Error: Height value must be a positive integer`);
     if(isNaN(numMines)) throw new Error(`Error: Number of mines must be a positive integer`);
 
-    startSimpleGame(numMines,width,height,d=>{
+    startSimpleGame(numMines,width,height,0,d=>{
+      bot.startGame(outChannel, author, "vanilla", d, null, replyFunc);
+    });
+  } else if(args.length == 4) {
+    let width = parseInt(args[0]);
+    let height = parseInt(args[1]);
+    let numMines = parseInt(args[2]);
+    let timer = args[3];
+    if(isNaN(width)) throw new Error(`Error: Width value must be a positive integer`);
+    if(isNaN(height)) throw new Error(`Error: Height value must be a positive integer`);
+    if(isNaN(numMines)) throw new Error(`Error: Number of mines must be a positive integer`);
+
+    let m;
+    let totalTime = 0;
+    if(timer != "") {
+      if((m = parseHMS.exec(timer)) !== null) totalTime = parseInt(m.groups.hours) * 3600 + parseInt(m.groups.minutes) * 60 + parseInt(m.groups.seconds);
+      else if((m = parseMS.exec(timer)) !== null) totalTime = parseInt(m.groups.minutes) * 60 + parseInt(m.groups.seconds);
+      else if((m = parseS.exec(timer)) !== null) totalTime = parseInt(m.groups.seconds);
+      else throw new Error(`Error: Timer value must follow the pattern \`hours:minutes:seconds\` or \`minutes:seconds\` or an integer of the total number of seconds`);
+    }
+
+    startSimpleGame(numMines,width,height,totalTime,d=>{
       bot.startGame(outChannel, author, "vanilla", d, null, replyFunc);
     });
   } else {
@@ -61,14 +86,15 @@ function startInteraction(bot, interaction) {
   startCommand(bot, interaction, interaction.channel, interaction.user, opt);
 }
 
-function startSimpleGame(n,w,h,startBoard) {
+function startSimpleGame(n,w,h,t,startBoard) {
   var data = {
     mines: {
       'discordplaysminesweeper.base.number-1': n
     },
     board: {
       width: w,
-      height: h
+      height: h,
+      timer: t
     },
     customBoardId: 'vanilla'
   };

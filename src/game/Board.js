@@ -7,8 +7,11 @@ const { promises : fs } = require("fs");
 const path = require('path');
 
 class MinesweeperBoard {
-  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack, missionName=null) {
-    this.customBoardId = "vanilla";
+  static id = "vanilla";
+  static hideSizeOptions = false;
+
+  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack, startTime, totalTime, missionName=null) {
+    this.customBoardId = MinesweeperBoard.id;
 
     if(guildId === null && channelId === null && userId === null) {
       // smaller constructor for reloading board
@@ -30,9 +33,12 @@ class MinesweeperBoard {
       this.bot = bot;
       this.won = false;
       this.exploded = false;
+      this.outOfTime = false;
       this.cached = null;
       this.hadError = false;
       this.missionName = missionName;
+      this.startTime = startTime;
+      this.totalTime = totalTime;
 
       for (var i = 0; i < this.width; i++)
         for (var j = 0; j < this.height; j++)
@@ -72,9 +78,12 @@ class MinesweeperBoard {
       texturepack: this.texturepack,
       won: this.won,
       exploded: this.exploded,
+      outOfTime: this.outOfTime,
       totalMineCounts: this.totalMineCounts,
       hadError: this.hadError,
-      missionName: this.missionName
+      missionName: this.missionName,
+      startTime: this.startTime.getTime(),
+      totalTime: this.totalTime
     }
   }
 
@@ -104,9 +113,18 @@ class MinesweeperBoard {
     this.texturepack = d.texturepack;
     this.won = d.won;
     this.exploded = d.exploded;
+    this.outOfTime = d.outOfTime;
     this.totalMineCounts = d.totalMineCounts;
     this.hadError = d.hadError;
     this.missionName = d.missionName;
+    this.startTime = new Date(d.startTime);
+    this.totalTime = d.totalTime;
+
+    if(this.totalTime > 0) {
+      setTimeout(()=>{
+        this.timerEnd();
+      }, this.totalTime * 1000);
+    }
   }
 
   save() {
@@ -277,6 +295,18 @@ class MinesweeperBoard {
       $t.get(xRand, yRand).mine = this.bot.getMineById(randMine);
       previousMineCoords.push([xRand, yRand]);
     }
+
+    if(this.totalTime > 0) {
+      setTimeout(()=>{
+        this.timerEnd();
+      }, this.totalTime * 1000);
+    }
+  }
+
+  timerEnd() {
+    this.outOfTime = true;
+    this.getChannel().then(x=>this.displayBoard({reply:y=>x.send(y)}));
+    this.delete();
   }
 
   bombExplode(replyFunc) {
@@ -443,34 +473,60 @@ class MinesweeperBoard {
   displayBoard(replyFunc) {
     var $t = this;
     if ($t.won) {
+      if(this.finishTime == undefined) this.finishTime = new Date();
       $t.render().then(img => {
+        let embed = new Discord.MessageEmbed()
+          .setColor("#00ff00")
+          .setAuthor("Congratulations!", $t.bot.jsonfile.logoGame)
+          .setImage("attachment://minesweeperboard.png");
+        if($t.totalTime > 0) embed.addField("Time remaining:", `${$t.getTimeRemaining(this.finishTime)}`);
+        embed.addField("Time taken:",`${$t.getTimeTaken(this.finishTime)}`);
         replyFunc.reply({
-          embeds:[
-            new Discord.MessageEmbed()
-            .setColor("#00ff00")
-            .setAuthor("Congratulations!", $t.bot.jsonfile.logoGame)
-            .setImage("attachment://minesweeperboard.png")
-          ],
-          files:[
-            new Discord.MessageAttachment(img, "minesweeperboard.png")
-          ]
+          embeds:[embed],
+          files:[new Discord.MessageAttachment(img, "minesweeperboard.png")]
         }).catch(reason => {
           console.error(reason);
         });
       });
     } else if ($t.exploded) {
+      if(this.finishTime == undefined) this.finishTime = new Date();
       replyFunc.reply({embeds:[$t.generateBoardEmbed()]}).then(m => {
         $t.render().then(img => {
+          let embed = new Discord.MessageEmbed()
+            .setColor("#ff0000")
+            .setAuthor("You blew up.", $t.bot.jsonfile.logoGame)
+            .setImage("attachment://minesweeperboard.png");
+          embed.addField("Time taken:",`${$t.getTimeTaken(this.finishTime)}`);
           let data = {
-            embeds:[
-              new Discord.MessageEmbed()
-              .setColor("#ff0000")
-              .setAuthor("You blew up.", $t.bot.jsonfile.logoGame)
-              .setImage("attachment://minesweeperboard.png")
-            ],
-            files:[
-              new Discord.MessageAttachment(img, "minesweeperboard.png")
-            ]
+            embeds:[embed],
+            files:[new Discord.MessageAttachment(img, "minesweeperboard.png")]
+          }
+          if(replyFunc.editReply)
+            replyFunc.editReply(data).catch(reason => {
+              console.error(reason);
+            });
+          else
+            m.edit(data).catch(reason => {
+              console.error(reason);
+            });
+        }).catch(reason => {
+          console.error(reason);
+        });
+      }).catch(reason => {
+        console.error(reason);
+      });
+    } else if ($t.outOfTime) {
+      if(this.finishTime == undefined) this.finishTime = new Date();
+      replyFunc.reply({embeds:[$t.generateBoardEmbed()]}).then(m => {
+        $t.render().then(img => {
+          let embed = new Discord.MessageEmbed()
+            .setColor("#ff0000")
+            .setAuthor("You ran out of time.", $t.bot.jsonfile.logoGame)
+            .setImage("attachment://minesweeperboard.png");
+          embed.addField("Time taken:",`${$t.getTimeTaken(this.finishTime)}`);
+          let data = {
+            embeds:[embed],
+            files:[new Discord.MessageAttachment(img, "minesweeperboard.png")]
           }
           if(replyFunc.editReply)
             replyFunc.editReply(data).catch(reason => {
@@ -520,11 +576,33 @@ class MinesweeperBoard {
       .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
       .setTitle(`Standard (${$t.width}x${$t.height})`)
       .setDescription($t.bot.generateTip())
-      .addField("Seed:", `${$t.seed}`)
-      .addField("Mines:", mineContent.trim() == "" ? "no mines?" : mineContent);
+      .addField("Seed:", `${$t.seed}`, true);
     if($t.missionName != null && $t.missionName.trim() != "")
-      embed.addField("Mission:", `${$t.missionName}`);
+      embed.addField("Mission:", `${$t.missionName}`, true);
+    embed.addField("Starting time:", $t.startTime.toString());
+    if($t.totalTime > 0)
+      embed.addField("Time remaining:", `${$t.getTimeRemaining()}`);
+    else embed.addField("Time taken:", `${$t.getTimeTaken()}`);
+    embed.addField("Mines:", mineContent.trim() == "" ? "no mines?" : mineContent);
     return embed;
+  }
+
+  getTimeRemaining(currentTime = new Date()) {
+    // I hate working with dates and times
+    let finishTime = new Date(this.startTime.getTime());
+    finishTime.setSeconds(finishTime.getSeconds() + this.totalTime);
+    let t = Math.floor(Math.abs(finishTime - currentTime) / 1000);
+    if(this.totalTime == 0) return null;
+    if(t < 60) return `${t} seconds`;
+    if(t/60 < 60) return `${Math.floor(t/60) % 60} minutes ${t % 60} seconds`;
+    if(t/3600 < 60) return `${Math.floor(t/3600)}:${Math.floor(t/60) % 60}:${t % 60} hours`;
+  }
+
+  getTimeTaken(currentTime = new Date()) {
+    let t = Math.floor(Math.abs(currentTime - this.startTime) / 1000);
+    if(t < 60) return `+ ${t} seconds`;
+    if(t/60 < 60) return `+ ${Math.floor(t/60) % 60} minutes ${t % 60} seconds`;
+    if(t/3600 < 60) return `+ ${Math.floor(t/3600)}:${Math.floor(t/60) % 60}:${t % 60} hours`;
   }
 
   getMineEmbedContent() {
@@ -535,7 +613,7 @@ class MinesweeperBoard {
     for(let i=0;i<k.length;i++) {
       let f = mines.filter(x=>x.id == k[i]);
       if(f.length > 0) {
-        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name} (${f[0].alias.map(x=>`&${x}`).join(', ')})`);
+        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name} (${f[0].alias.map(x=>`&${x}`).join(', ')}) []`);
       }
     }
 

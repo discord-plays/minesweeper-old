@@ -2,6 +2,7 @@ const Board = require('../../game/Board');
 
 class FBoard extends Board {
   static id = "fboard";
+  static hideSizeOptions = true;
 
   constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack) {
     super(bot, boardId, guildId, channelId, userId, 15, 15, seed, texturepack);
