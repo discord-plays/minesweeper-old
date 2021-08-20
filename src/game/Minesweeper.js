@@ -159,6 +159,7 @@ class MinesweeperBot {
 
     let startTime = new Date();
     let totalTime = (j.board.timer == null || j.board.timer == undefined) ? 0 : parseInt(j.board.timer);
+    if(isNaN(totalTime)) totalTime = 0;
 
     // Change seed for tournament or something?
     let seed = (j.board.seed == null || j.board.seed == undefined) ? Math.floor(Math.random()*Math.pow(10,15)) : parseInt(j.board.seed);

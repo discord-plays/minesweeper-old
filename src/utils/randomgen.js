@@ -10,8 +10,8 @@ class randomgen {
   }
 
   getInt(max=1) {
-    this.live = Math.round(this.r()*max);
-    return this.live;
+    this.live = this.r();
+    return Math.round(this.live*max);
   }
 }
 

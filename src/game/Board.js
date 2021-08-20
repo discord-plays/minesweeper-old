@@ -426,7 +426,7 @@ class MinesweeperBoard {
   }
 
   randomMine(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+    return arr[this.r.getInt(arr.length-1)];
   }
 
   flagHashToIndex(text) {

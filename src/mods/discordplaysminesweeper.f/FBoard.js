@@ -4,8 +4,14 @@ class FBoard extends Board {
   static id = "fboard";
   static hideSizeOptions = true;
 
-  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack) {
-    super(bot, boardId, guildId, channelId, userId, 15, 15, seed, texturepack);
+  // Do I really have to write out the whole constructor
+  constructor(...args) {
+    // Hacky way to override the width and height?
+    if(args.length >= 7) {
+      args[5] = 15;
+      args[6] = 15;
+    }
+    super(...args);
     this.customBoardId = FBoard.id;
   }
 

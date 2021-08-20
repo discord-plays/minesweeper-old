@@ -1,7 +1,23 @@
+var timerCheckbox,timerTimeSection,timerHours,timerMinutes,timerSeconds,modCheckboxes;
+
+$(document).ready(function() {
+  timerCheckbox = $("#MineTimerEnabled");
+  timerTimeSection = $("#MineTimerTime");
+  timerHours = $("#MineTimerHours");
+  timerMinutes = $("#MineTimerMinutes");
+  timerSeconds = $("#MineTimerSeconds");
+  modCheckboxes = $(".MineModsCheckbox");
+
+  timerCheckbox.click(function() {
+    if(timerCheckbox.is(':checked')) timerTimeSection.slideDown();
+    else timerTimeSection.slideUp();
+  });
+});
+
 function generate_json() {
   var data = {
     mines: {},
-    board: {},
+    board: {timer:0},
     customBoardId: $("#MineBoards").val()
   }
 
@@ -31,11 +47,12 @@ function generate_json() {
     }
   }
 
+  if(timerCheckbox.is(':checked')) data.board.timer = parseInt(timerHours.val()) * 3600 + parseInt(timerMinutes.val()) * 60 + parseInt(timerSeconds.val());
+
   return data;
 }
 
-function updateShowingModSections() {
-  var modCheckboxes = $(".MineModsCheckbox");
+function updateDynamicContent() {
   for (var i=0; i<modCheckboxes.length; i++) {
     var modid = $(modCheckboxes[i]).data('mod');
     var isEnabled = $(modCheckboxes[i]).is(':checked');
@@ -51,7 +68,7 @@ $(document).ready(function () {
   $('.selector-page').stop().slideUp(0);
 
   $(".selector-button").click(function() {
-    updateShowingModSections();
+    updateDynamicContent();
     $(this).parent().stop().slideUp();
     $("#"+$(this).attr('to')).stop().slideDown();
   });
