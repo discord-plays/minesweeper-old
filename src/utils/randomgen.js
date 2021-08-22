@@ -6,7 +6,7 @@ class randomgen {
   constructor(seed, live=null) {
     this.seed=seed;
     this.live=live || seed;
-    this.r=new Math.seedrandom(live);
+    this.r=new Math.seedrandom(this.live);
   }
 
   getInt(max=1) {

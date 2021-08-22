@@ -22,11 +22,7 @@ const guildSettingsPath = path.join(datadir, 'GuildSettings');
 const userSettingsPath = path.join(datadir, 'UserSettings');
 const boardDataPath = path.join(datadir,'Boards');
 
-const jsonfile = {
-  ...loadingconfig,
-  logoGame: loadingconfig.logoGame,
-  logoQuestion: loadingconfig.logoQuestion
-};
+const jsonfile = {...loadingconfig};
 
 var config_maxboardx;
 var config_maxboardy;
@@ -128,5 +124,16 @@ client.on("interactionCreate", interaction => {
   }
 });
 
-// login stuffs
-client.login(process.env.DISCORD_TOKEN);
+function execute() {
+  // login stuffs
+  client.login(process.env.DISCORD_TOKEN);
+}
+
+function shutdown() {
+  // Gracefully close and cleanup Minesweeper class
+  bot.end();
+  // Gracefully logout and terminate the Discord client
+  client.destroy();
+}
+
+module.exports = { execute, shutdown };

@@ -14,8 +14,7 @@ const DEBUG_LOGGING = require('../debug_logging');
 const TotalResources = 1;
 const defaultGuildSettings = {
   prefix: '>'
-}
-
+};
 
 class MinesweeperBot {
   constructor(client, server, options) {
@@ -27,6 +26,7 @@ class MinesweeperBot {
     this.loadedcommands = 0;
     this.loadedmissions = 0;
     this.web = server;
+    this.timerCheckId = 0;
 
     // guildSettingsPath, userSettingsPath, maxBoardX, maxBoardY, jsonfile, datadir, basedir
     var k = Object.keys(options);
@@ -162,7 +162,7 @@ class MinesweeperBot {
     if(isNaN(totalTime)) totalTime = 0;
 
     // Change seed for tournament or something?
-    let seed = (j.board.seed == null || j.board.seed == undefined) ? Math.floor(Math.random()*Math.pow(10,15)) : parseInt(j.board.seed);
+    let seed = (j.board.seed == null || j.board.seed == undefined) ? Math.floor(Math.random() * Math.pow(10,15)) : parseInt(j.board.seed);
 
     var board = this.createBoard(customBoardId, boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%", startTime, totalTime, missionName);
     board.generate(j.mines);
@@ -273,11 +273,16 @@ class MinesweeperBot {
     return this.__assets;
   }
 
+  // Start the Minesweeper handler
   start() {
     console.log("I think the bot is starting");
     this.updateStatus(true);
 
     let $t = this;
+    this.timerCheckId = setInterval(function() {
+      $t.timerChecker($t);
+    }, this.jsonfile.timerCheckInterval);
+
     this.load().then(x=>{
       Promise.allSettled(x.map(y=>$t.loadASingleBoard($t,y))).then(results=>{
         results.forEach((result, num)=>{
@@ -288,9 +293,23 @@ class MinesweeperBot {
             console.error(result.reason);
           }
         });
-        this.updateStatus();
+        $t.updateStatus();
       });
     });
+  }
+
+  // Clean up this class
+  end() {
+    let $t=this;
+    if ($t.timerCheckId != 0) clearInterval($t.timerCheckId);
+  }
+
+  // Provide the boards a constant update for time based events like a timer running out
+  timerChecker() {
+    let $t=this;
+    for (const item in $t.__boards) {
+      $t.__boards[item].timerCheck();
+    }
   }
 
   async loadASingleBoard($t,id) {

@@ -10,10 +10,11 @@ class MinesweeperBoard {
   static id = "vanilla";
   static hideSizeOptions = false;
 
-  constructor(bot, boardId, guildId=null, channelId=null, userId=null, width, height, seed, texturepack, startTime, totalTime, missionName=null) {
+  constructor(bot, boardId, guildId = null, channelId = null, userId = null, width, height, seed, texturepack, startTime, totalTime, missionName = null) {
     this.customBoardId = MinesweeperBoard.id;
+    this.running = false;
 
-    if(guildId === null && channelId === null && userId === null) {
+    if (guildId === null && channelId === null && userId === null) {
       // smaller constructor for reloading board
       this.id = boardId;
       this.bot = bot;
@@ -40,9 +41,7 @@ class MinesweeperBoard {
       this.startTime = startTime;
       this.totalTime = totalTime;
 
-      for (var i = 0; i < this.width; i++)
-        for (var j = 0; j < this.height; j++)
-          this.board.set(i, j, new Cell(this));
+      for (var i = 0; i < this.width; i++) for (var j = 0; j < this.height; j++) this.board.set(i, j, new Cell(this));
     }
   }
 
@@ -52,12 +51,11 @@ class MinesweeperBoard {
 
   async getChannel() {
     try {
-      if(this.guildId == "dm") {
+      if (this.guildId == "dm") {
         let dm = await this.bot.getDMChannel(this.userId);
         this.channelId = dm.id;
         return dm;
-      }
-      else return await this.bot.getChannel(this.channelId);
+      } else return await this.bot.getChannel(this.channelId);
     } catch (err) {
       console.error(err);
       throw new Error("Error: unable to find channel");
@@ -83,26 +81,29 @@ class MinesweeperBoard {
       hadError: this.hadError,
       missionName: this.missionName,
       startTime: this.startTime.getTime(),
-      totalTime: this.totalTime
-    }
+      totalTime: this.totalTime,
+    };
   }
 
   loadRawData(d) {
-    let $t=this;
+    let $t = this;
     this.customBoardId = d.customBoardId || "vanilla";
-    this.board = ndarray(d.board.map(x=>{
-      if(x instanceof Cell) {
-        return x;
-      } else {
-        let y=new Cell($t);
-        y.mine = $t.bot.getMineById(x[0]);
-        y.flag = $t.bot.getFlagById(x[1]);
-        y.number = x[2] === null ? Number.MAX_SAFE_INTEGER : x[2];
-        y.visible = x[3];
-        y.extra = x[4];
-        return y;
-      }
-    }), [d.width, d.height]);
+    this.board = ndarray(
+      d.board.map((x) => {
+        if (x instanceof Cell) {
+          return x;
+        } else {
+          let y = new Cell($t);
+          y.mine = $t.bot.getMineById(x[0]);
+          y.flag = $t.bot.getFlagById(x[1]);
+          y.number = x[2] === null ? Number.MAX_SAFE_INTEGER : x[2];
+          y.visible = x[3];
+          y.extra = x[4];
+          return y;
+        }
+      }),
+      [d.width, d.height]
+    );
     this.seed = d.seed.base;
     this.r = new randomgen(d.seed.base, d.seed.live);
     this.width = d.width;
@@ -119,74 +120,91 @@ class MinesweeperBoard {
     this.missionName = d.missionName;
     this.startTime = new Date(d.startTime);
     this.totalTime = d.totalTime;
+  }
 
-    if(this.totalTime > 0) {
-      setTimeout(()=>{
-        this.timerEnd();
-      }, this.totalTime * 1000);
+  timerCheck() {
+    if(!this.running || this.outOfTime || this.won || this.exploded) return;
+    if (this.startTime.getTime() + this.totalTime * 1000 <= new Date().getTime()) {
+      this.timerEnd();
     }
   }
 
+  timerEnd() {
+    this.outOfTime = true;
+    this.getChannel().then((x) => this.displayBoard({ reply: (y) => x.send(y) }));
+    this.delete();
+  }
+
   save() {
-    let $t=this;
-    fs.writeFile(path.join($t.bot.boardDataPath,$t.id+".json"), JSON.stringify($t.getRawData()), { encoding: 'utf8' }).then(() => {
-      /* Ignore cuz it saved fine */
-    }).catch((err)=>{
-      console.error(`Failed to save board ${$t.id} lol`);
-      console.error(err);
-    });
+    let $t = this;
+    fs.writeFile(path.join($t.bot.boardDataPath, $t.id + ".json"), JSON.stringify($t.getRawData()), { encoding: "utf8" })
+      .then(() => {
+        /* Ignore cuz it saved fine */
+      })
+      .catch((err) => {
+        console.error(`Failed to save board ${$t.id} lol`);
+        console.error(err);
+      });
   }
 
   load() {
-    let $t=this;
-    return new Promise((resolve, reject)=>{
-      fs.readFile(path.join($t.bot.boardDataPath,$t.id+".json"), { encoding: 'utf8' }).then(d=>{
-        $t.loadRawData(JSON.parse(d));
-        $t.postLoad().then(x=>{
-          resolve();
-        }).catch(reason=>{
-          reject(reason);
+    let $t = this;
+    return new Promise((resolve, reject) => {
+      fs.readFile(path.join($t.bot.boardDataPath, $t.id + ".json"), { encoding: "utf8" })
+        .then((d) => {
+          $t.loadRawData(JSON.parse(d));
+          $t.postLoad()
+            .then((x) => {
+              resolve();
+            })
+            .catch((reason) => {
+              reject(reason);
+            });
+        })
+        .catch((err) => {
+          console.error(`Failed to load board ${$t.id} lol`);
+          console.error(err);
+          reject(err);
         });
-      }).catch((err)=>{
-        console.error(`Failed to load board ${$t.id} lol`);
-        console.error(err);
-        reject(err);
-      });
     });
   }
 
-  postLoad(isMoved=false,usersToInvite=null) {
-    let $t=this;
+  postLoad(isMoved = false, usersToInvite = null) {
+    let $t = this;
     let z = {};
-    if(usersToInvite != null) z.content = usersToInvite.join(' ');
-    return new Promise((resolve, reject)=>{
-      $t.getChannel().then(x=>{
-        var embed1 = new Discord.MessageEmbed()
-          .setColor("#9D2230")
-          .setAuthor("Minesweeper!", $t.bot.jsonfile.logoQuestion)
-          .setTitle("Reloading Game")
-          .setDescription([
-            isMoved ? 'The board was moved from another channel and is being loaded from its last state' : 'The bot was restarted and this board is being loaded from the last saved state.',
-            'The board will be displayed when it is ready.'
-          ].join('\n'));
-  
-        // This is probably just a hack?
-        x.send({...z,embeds:[embed1]}).then(m=>{
-          $t.displayBoard({reply:a=>{
-            m.edit({...z,embeds:[embed1,...a.embeds],files:a.files});
-            return new Promise((resolve,reject)=>{
-              resolve({edit:a=>{
-                return m.edit({...z,embeds:[embed1,...a.embeds],files:a.files});
-              }});
+    if (usersToInvite != null) z.content = usersToInvite.join(" ");
+    this.running = true;
+    return new Promise((resolve, reject) => {
+      $t.getChannel()
+        .then((x) => {
+          var embed1 = new Discord.MessageEmbed()
+            .setColor("#9D2230")
+            .setAuthor("Minesweeper!", $t.bot.jsonfile.logoQuestion)
+            .setTitle("Reloading Game")
+            .setDescription([isMoved ? "The board was moved from another channel and is being loaded from its last state" : "The bot was restarted and this board is being loaded from the last saved state.", "The board will be displayed when it is ready."].join("\n"));
+
+          // This is probably just a hack?
+          x.send({ ...z, embeds: [embed1] }).then((m) => {
+            $t.displayBoard({
+              reply: (a) => {
+                m.edit({ ...z, embeds: [embed1, ...a.embeds], files: a.files });
+                return new Promise((resolve, reject) => {
+                  resolve({
+                    edit: (a) => {
+                      return m.edit({ ...z, embeds: [embed1, ...a.embeds], files: a.files });
+                    },
+                  });
+                });
+              },
             });
-          }});
-          resolve();
+            resolve();
+          });
+        })
+        .catch((err) => {
+          console.error(`Failed to load channel for board: ${$t.id}`);
+          console.error(err);
+          reject(err);
         });
-      }).catch((err)=>{
-        console.error(`Failed to load channel for board: ${$t.id}`);
-        console.error(err);
-        reject(err);
-      });
     });
   }
 
@@ -197,7 +215,7 @@ class MinesweeperBoard {
     var textures = await tp.use();
     try {
       var baseimg;
-      if(this.cached == null) {
+      if (this.cached == null) {
         baseimg = new Jimp(16 * ($t.width + 2), 16 * ($t.height + 2));
         var borderRightEdge = ($t.width + 1) * 16;
         var borderBottomEdge = ($t.height + 1) * 16;
@@ -246,7 +264,7 @@ class MinesweeperBoard {
     }
   }
 
-  isInvalidCell(x,y) {
+  isInvalidCell(x, y) {
     return false;
   }
 
@@ -257,13 +275,11 @@ class MinesweeperBoard {
       regenMine = true,
       totalMines = 0;
 
-    for (var i = 0; i < $t.width; i++)
-      for (var j = 0; j < $t.height; j++)
-        this.board.set(i, j, new Cell($t));
+    for (var i = 0; i < $t.width; i++) for (var j = 0; j < $t.height; j++) this.board.set(i, j, new Cell($t));
 
     this.totalMineCounts = totalMineCounts;
     var mineCounts = {
-      ...totalMineCounts
+      ...totalMineCounts,
     };
     var allowedMines = Object.keys(mineCounts);
     for (var i = 0; i < allowedMines.length; i++) {
@@ -277,11 +293,11 @@ class MinesweeperBoard {
 
     var previousMineCoords = [];
     for (var i = 0; i < totalMines; i++) {
-      xRand = this.r.getInt(this.width-1);
-      yRand = this.r.getInt(this.height-1);
-      while (this.isInvalidCell(xRand,yRand) || previousMineCoords.filter(x => x[0] == xRand && x[1] == yRand).length >= 1) {
-        xRand = this.r.getInt(this.width-1);
-        yRand = this.r.getInt(this.height-1);
+      xRand = this.r.getInt(this.width - 1);
+      yRand = this.r.getInt(this.height - 1);
+      while (this.isInvalidCell(xRand, yRand) || previousMineCoords.filter((x) => x[0] == xRand && x[1] == yRand).length >= 1) {
+        xRand = this.r.getInt(this.width - 1);
+        yRand = this.r.getInt(this.height - 1);
       }
       regenMine = true;
       while (regenMine == true) {
@@ -295,18 +311,6 @@ class MinesweeperBoard {
       $t.get(xRand, yRand).mine = this.bot.getMineById(randMine);
       previousMineCoords.push([xRand, yRand]);
     }
-
-    if(this.totalTime > 0) {
-      setTimeout(()=>{
-        this.timerEnd();
-      }, this.totalTime * 1000);
-    }
-  }
-
-  timerEnd() {
-    this.outOfTime = true;
-    this.getChannel().then(x=>this.displayBoard({reply:y=>x.send(y)}));
-    this.delete();
   }
 
   bombExplode(replyFunc) {
@@ -324,19 +328,23 @@ class MinesweeperBoard {
   }
 
   delete() {
-    let $t=this;
-    let p = path.join($t.bot.boardDataPath,$t.id+".json");
-    fs.writeFile(p,"finished", { encoding: 'utf8' }).then(()=>{
-      fs.rm(p).then(()=>{
-        /* good vibes */
-      }).catch(err=>{
-        console.error(`Error deleting old board data for ${$t.id} but the old data was voided`);
+    let $t = this;
+    let p = path.join($t.bot.boardDataPath, $t.id + ".json");
+    fs.writeFile(p, "finished", { encoding: "utf8" })
+      .then(() => {
+        fs.rm(p)
+          .then(() => {
+            /* good vibes */
+          })
+          .catch((err) => {
+            console.error(`Error deleting old board data for ${$t.id} but the old data was voided`);
+            console.error(err);
+          });
+      })
+      .catch((err) => {
+        console.error(`Error void old board data for ${$t.id} this game could be regenerated at a previous state if the bot restarts`);
         console.error(err);
       });
-    }).catch(err=>{
-      console.error(`Error void old board data for ${$t.id} this game could be regenerated at a previous state if the bot restarts`);
-      console.error(err);
-    });
     this.bot.deleteBoard(this.id);
   }
 
@@ -356,17 +364,15 @@ class MinesweeperBoard {
 
   fillNumbers() {
     var $t = this;
-    for (var i = 0; i < $t.width; i++)
-      for (var j = 0; j < $t.height; j++)
-        if($t.get(i, j).mined)
-          $t.fillNumbersForMine($t.get(i, j).mine, i, j, $t.width, $t.height);
-    
+    for (var i = 0; i < $t.width; i++) for (var j = 0; j < $t.height; j++) if ($t.get(i, j).mined) $t.fillNumbersForMine($t.get(i, j).mine, i, j, $t.width, $t.height);
+
     for (var i = 0; i < $t.width; i++)
       for (var j = 0; j < $t.height; j++) {
-        let c=$t.get(i,j);
-        if(!c.mined && !c.flagged)
-          // I think this means 1 in 69,000 chance
-          if (c.number == 69 && Math.random() < 0.000014493) c.extra = "69";
+        let c = $t.get(i, j);
+        if (!c.mined && !c.flagged)
+          if (c.number == 69 && Math.random() < 0.000014493)
+            // I think this means 1 in 69,000 chance
+            c.extra = "69";
       }
   }
 
@@ -376,13 +382,13 @@ class MinesweeperBoard {
     for (var i = 0; i < toZero.length; i++) {
       if (toZero[i][0] < 0 || toZero[i][1] < 0 || toZero[i][0] >= $t.width || toZero[i][1] >= $t.height) continue;
       let n = $t.get(toZero[i][0], toZero[i][1]);
-      if(n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
+      if (n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
     }
     let toCheck = mine.affectedCells(x, y, w, h);
     for (var i = 0; i < toCheck.length; i++) {
       if (toCheck[i][0] < 0 || toCheck[i][1] < 0 || toCheck[i][0] >= $t.width || toCheck[i][1] >= $t.height) continue;
       let n = $t.get(toCheck[i][0], toCheck[i][1]);
-      if(n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
+      if (n.number == Number.MAX_SAFE_INTEGER) n.number = 0;
       let newExtra = mine.calculateExtra(n.number);
       n.extra = newExtra || n.extra;
       n.number = mine.calculateValue(n.number);
@@ -391,9 +397,7 @@ class MinesweeperBoard {
 
   floodFill(posX, posY, cells = []) {
     var $t = this,
-      toCheck = [
-        [posX, posY]
-      ];
+      toCheck = [[posX, posY]];
     var i = -1;
     while (i < toCheck.length - 1) {
       i++;
@@ -422,11 +426,11 @@ class MinesweeperBoard {
   }
 
   floodFillChecker(arr, pos) {
-    return arr.some(d => JSON.stringify(d) === JSON.stringify(pos));
+    return arr.some((d) => JSON.stringify(d) === JSON.stringify(pos));
   }
 
   randomMine(arr) {
-    return arr[this.r.getInt(arr.length-1)];
+    return arr[this.r.getInt(arr.length - 1)];
   }
 
   flagHashToIndex(text) {
@@ -448,13 +452,12 @@ class MinesweeperBoard {
 
     return {
       row: this.rowA1ToIndex(rowA1),
-      col: this.colA1ToIndex(colA1)
+      col: this.colA1ToIndex(colA1),
     };
   }
 
   colA1ToIndex(colA1) {
-    if (typeof colA1 !== "string" || colA1.length > 2)
-      throw new Error("Error: Expected column label.");
+    if (typeof colA1 !== "string" || colA1.length > 2) throw new Error("Error: Expected column label.");
 
     var A = "A".charCodeAt(0);
     var number = colA1.charCodeAt(colA1.length - 1) - A;
@@ -473,98 +476,104 @@ class MinesweeperBoard {
   displayBoard(replyFunc) {
     var $t = this;
     if ($t.won) {
-      if(this.finishTime == undefined) this.finishTime = new Date();
-      $t.render().then(img => {
-        let embed = new Discord.MessageEmbed()
-          .setColor("#00ff00")
-          .setAuthor("Congratulations!", $t.bot.jsonfile.logoGame)
-          .setImage("attachment://minesweeperboard.png");
-        if($t.totalTime > 0) embed.addField("Time remaining:", `${$t.getTimeRemaining(this.finishTime)}`);
-        embed.addField("Time taken:",`${$t.getTimeTaken(this.finishTime)}`);
-        replyFunc.reply({
-          embeds:[embed],
-          files:[new Discord.MessageAttachment(img, "minesweeperboard.png")]
-        }).catch(reason => {
-          console.error(reason);
-        });
+      if (this.finishTime == undefined) this.finishTime = new Date();
+      $t.render().then((img) => {
+        let embed = new Discord.MessageEmbed().setColor("#00ff00").setAuthor("Congratulations!", $t.bot.jsonfile.logoGame).setImage("attachment://minesweeperboard.png");
+        if ($t.totalTime > 0) embed.addField("Time remaining:", `${$t.getTimeRemaining(this.finishTime)}`);
+        embed.addField("Time taken:", `${$t.getTimeTaken(this.finishTime)}`);
+        replyFunc
+          .reply({
+            embeds: [embed],
+            files: [new Discord.MessageAttachment(img, "minesweeperboard.png")],
+          })
+          .catch((reason) => {
+            console.error(reason);
+          });
       });
     } else if ($t.exploded) {
-      if(this.finishTime == undefined) this.finishTime = new Date();
-      replyFunc.reply({embeds:[$t.generateBoardEmbed()]}).then(m => {
-        $t.render().then(img => {
-          let embed = new Discord.MessageEmbed()
-            .setColor("#ff0000")
-            .setAuthor("You blew up.", $t.bot.jsonfile.logoGame)
-            .setImage("attachment://minesweeperboard.png");
-          embed.addField("Time taken:",`${$t.getTimeTaken(this.finishTime)}`);
-          let data = {
-            embeds:[embed],
-            files:[new Discord.MessageAttachment(img, "minesweeperboard.png")]
-          }
-          if(replyFunc.editReply)
-            replyFunc.editReply(data).catch(reason => {
+      if (this.finishTime == undefined) this.finishTime = new Date();
+      replyFunc
+        .reply({ embeds: [$t.generateBoardEmbed()] })
+        .then((m) => {
+          $t.render()
+            .then((img) => {
+              let embed = new Discord.MessageEmbed().setColor("#ff0000").setAuthor("You blew up.", $t.bot.jsonfile.logoGame).setImage("attachment://minesweeperboard.png");
+              embed.addField("Time taken:", `${$t.getTimeTaken(this.finishTime)}`);
+              let data = {
+                embeds: [embed],
+                files: [new Discord.MessageAttachment(img, "minesweeperboard.png")],
+              };
+              if (replyFunc.editReply)
+                replyFunc.editReply(data).catch((reason) => {
+                  console.error(reason);
+                });
+              else
+                m.edit(data).catch((reason) => {
+                  console.error(reason);
+                });
+            })
+            .catch((reason) => {
               console.error(reason);
             });
-          else
-            m.edit(data).catch(reason => {
-              console.error(reason);
-            });
-        }).catch(reason => {
+        })
+        .catch((reason) => {
           console.error(reason);
         });
-      }).catch(reason => {
-        console.error(reason);
-      });
     } else if ($t.outOfTime) {
-      if(this.finishTime == undefined) this.finishTime = new Date();
-      replyFunc.reply({embeds:[$t.generateBoardEmbed()]}).then(m => {
-        $t.render().then(img => {
-          let embed = new Discord.MessageEmbed()
-            .setColor("#ff0000")
-            .setAuthor("You ran out of time.", $t.bot.jsonfile.logoGame)
-            .setImage("attachment://minesweeperboard.png");
-          embed.addField("Time taken:",`${$t.getTimeTaken(this.finishTime)}`);
-          let data = {
-            embeds:[embed],
-            files:[new Discord.MessageAttachment(img, "minesweeperboard.png")]
-          }
-          if(replyFunc.editReply)
-            replyFunc.editReply(data).catch(reason => {
+      if (this.finishTime == undefined) this.finishTime = new Date();
+      replyFunc
+        .reply({ embeds: [$t.generateBoardEmbed()] })
+        .then((m) => {
+          $t.render()
+            .then((img) => {
+              let embed = new Discord.MessageEmbed().setColor("#ff0000").setAuthor("You ran out of time.", $t.bot.jsonfile.logoGame).setImage("attachment://minesweeperboard.png");
+              embed.addField("Time taken:", `${$t.getTimeTaken(this.finishTime)}`);
+              let data = {
+                embeds: [embed],
+                files: [new Discord.MessageAttachment(img, "minesweeperboard.png")],
+              };
+              if (replyFunc.editReply)
+                replyFunc.editReply(data).catch((reason) => {
+                  console.error(reason);
+                });
+              else
+                m.edit(data).catch((reason) => {
+                  console.error(reason);
+                });
+            })
+            .catch((reason) => {
               console.error(reason);
             });
-          else
-            m.edit(data).catch(reason => {
-              console.error(reason);
-            });
-        }).catch(reason => {
+        })
+        .catch((reason) => {
           console.error(reason);
         });
-      }).catch(reason => {
-        console.error(reason);
-      });
     } else {
-      replyFunc.reply({embeds:[
-        $t.generateBoardEmbed().addField("Loading...","(eta 3 years)")
-      ]}).then(m => {
-        $t.render().then(img => {
-          let data = {
-            files:[new Discord.MessageAttachment(img, "minesweeperboard.png")],
-            embeds:[$t.generateBoardEmbed().setImage("attachment://minesweeperboard.png")]
-          };
-          if(replyFunc.editReply)
-            replyFunc.editReply(data).catch(reason => {
+      replyFunc
+        .reply({ embeds: [$t.generateBoardEmbed().addField("Loading...", "(eta 3 years)")] })
+        .then((m) => {
+          $t.render()
+            .then((img) => {
+              let data = {
+                files: [new Discord.MessageAttachment(img, "minesweeperboard.png")],
+                embeds: [$t.generateBoardEmbed().setImage("attachment://minesweeperboard.png")],
+              };
+              if (replyFunc.editReply)
+                replyFunc.editReply(data).catch((reason) => {
+                  console.error(reason);
+                });
+              else
+                m.edit(data).catch((reason) => {
+                  console.error(reason);
+                });
+            })
+            .catch((reason) => {
               console.error(reason);
             });
-          else
-            m.edit(data).catch(reason => {
-              console.error(reason);
-            });
-        }).catch(reason => {
+        })
+        .catch((reason) => {
           console.error(reason);
         });
-      }).catch(reason => {
-        console.error(reason);
-      });
     }
     // add code to make message here pls
   }
@@ -572,16 +581,10 @@ class MinesweeperBoard {
   generateBoardEmbed() {
     var $t = this;
     let mineContent = $t.getMineEmbedContent();
-    let embed = new Discord.MessageEmbed()
-      .setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame)
-      .setTitle(`Standard (${$t.width}x${$t.height})`)
-      .setDescription($t.bot.generateTip())
-      .addField("Seed:", `${$t.seed}`, true);
-    if($t.missionName != null && $t.missionName.trim() != "")
-      embed.addField("Mission:", `${$t.missionName}`, true);
+    let embed = new Discord.MessageEmbed().setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame).setTitle(`Standard (${$t.width}x${$t.height})`).setDescription($t.bot.generateTip()).addField("Seed:", `${$t.seed}`, true);
+    if ($t.missionName != null && $t.missionName.trim() != "") embed.addField("Mission:", `${$t.missionName}`, true);
     embed.addField("Starting time:", $t.startTime.toString());
-    if($t.totalTime > 0)
-      embed.addField("Time remaining:", `${$t.getTimeRemaining()}`);
+    if ($t.totalTime > 0) embed.addField("Time remaining:", `${$t.getTimeRemaining()}`);
     else embed.addField("Time taken:", `${$t.getTimeTaken()}`);
     embed.addField("Mines:", mineContent.trim() == "" ? "no mines?" : mineContent);
     return embed;
@@ -592,7 +595,7 @@ class MinesweeperBoard {
     let finishTime = new Date(this.startTime.getTime());
     finishTime.setSeconds(finishTime.getSeconds() + this.totalTime);
     let t = Math.floor(Math.abs(finishTime - currentTime) / 1000);
-    if(this.totalTime == 0) return null;
+    if (this.totalTime == 0) return null;
     return this.timeToString(t);
   }
 
@@ -605,23 +608,27 @@ class MinesweeperBoard {
     if (t < 60) return `${t} seconds`;
     if (t / 60 < 60) return `${Math.floor(t / 60)} minutes ${t % 60} seconds`;
     if (t / 3600 < 60) return `${Math.floor(t / 3600)}:${Math.floor(t / 60) % 60}:${t % 60} hours`;
-    if (t / 3600 < 24) return `${Math.floor(t / 3600) % 24}:${Math.floor(t / 60) % 60}:${t % 60} hours`;
-    return `${Math.floor(t / 86400)} days ${Math.floor(t / 3600) % 24}:${Math.floor(t / 60) % 60}:${t % 60} hours`;
+    if (t / 3600 < 24) return `${this.numberOfHoursString(t)} hours`;
+    return `${Math.floor(t / 86400)} days ${this.numberOfHoursString(t)} hours`;
+  }
+
+  numberOfHoursString(t) {
+    return `${Math.floor(t / 3600) % 24}:${(Math.floor(t / 60) % 60).toString().padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
   }
 
   getMineEmbedContent() {
-    let o=[];
+    let o = [];
     let mines = this.bot.getMines();
 
     let k = Object.keys(this.totalMineCounts);
-    for(let i=0;i<k.length;i++) {
-      let f = mines.filter(x=>x.id == k[i]);
-      if(f.length > 0) {
-        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name} (${f[0].alias.map(x=>`&${x}`).join(', ')}) []`);
+    for (let i = 0; i < k.length; i++) {
+      let f = mines.filter((x) => x.id == k[i]);
+      if (f.length > 0) {
+        o.push(`${this.totalMineCounts[k[i]]} x ${f[0].name} (${f[0].alias.map((x) => `&${x}`).join(", ")}) []`);
       }
     }
 
-    return o.join('\n');
+    return o.join("\n");
   }
 
   flaggedMines() {
@@ -636,7 +643,7 @@ class MinesweeperBoard {
   }
 
   async calculateCurrentCellView(textures, cell, showExploded = true) {
-    if(cell.extra == "#") return await textures.getTexture("discordplaysminesweeper.base/border/empty");
+    if (cell.extra == "#") return await textures.getTexture("discordplaysminesweeper.base/border/empty");
 
     if (showExploded && cell.mined) return await cell.mine.getMineTexture(textures);
     if (!cell.visible) return await textures.raisedCell();

@@ -2,7 +2,7 @@
   "name": "discord-plays-minesweeper",
   "version": "2.0.0",
   "description": "Minesweeper but as a Discord bot",
-  "main": "./src/bot.js",
+  "main": "./src/main.js",
   "scripts": {
     "start": "node ."
   },
