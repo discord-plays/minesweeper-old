@@ -38,7 +38,7 @@ const client = new Discord_OAuth_Client({
 });
 
 var authorizeURL = 'https://discord.com/oauth2/authorize';
- 
+
 app.get("/", (req,res,...a)=>{
   res.render(getFile('index.ejs'),{
     minesweeper:bot,
