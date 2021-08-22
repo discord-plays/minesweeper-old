@@ -593,16 +593,20 @@ class MinesweeperBoard {
     finishTime.setSeconds(finishTime.getSeconds() + this.totalTime);
     let t = Math.floor(Math.abs(finishTime - currentTime) / 1000);
     if(this.totalTime == 0) return null;
-    if(t < 60) return `${t} seconds`;
-    if(t/60 < 60) return `${Math.floor(t/60) % 60} minutes ${t % 60} seconds`;
-    if(t/3600 < 60) return `${Math.floor(t/3600)}:${Math.floor(t/60) % 60}:${t % 60} hours`;
+    return this.timeToString(t);
   }
 
   getTimeTaken(currentTime = new Date()) {
     let t = Math.floor(Math.abs(currentTime - this.startTime) / 1000);
-    if(t < 60) return `+ ${t} seconds`;
-    if(t/60 < 60) return `+ ${Math.floor(t/60) % 60} minutes ${t % 60} seconds`;
-    if(t/3600 < 60) return `+ ${Math.floor(t/3600)}:${Math.floor(t/60) % 60}:${t % 60} hours`;
+    return `+ ${this.timeToString(t)}`;
+  }
+
+  timeToString(t) {
+    if (t < 60) return `${t} seconds`;
+    if (t / 60 < 60) return `${Math.floor(t / 60)} minutes ${t % 60} seconds`;
+    if (t / 3600 < 60) return `${Math.floor(t / 3600)}:${Math.floor(t / 60) % 60}:${t % 60} hours`;
+    if (t / 3600 < 24) return `${Math.floor(t / 3600) % 24}:${Math.floor(t / 60) % 60}:${t % 60} hours`;
+    return `${Math.floor(t / 86400)} days ${Math.floor(t / 3600) % 24}:${Math.floor(t / 60) % 60}:${t % 60} hours`;
   }
 
   getMineEmbedContent() {
