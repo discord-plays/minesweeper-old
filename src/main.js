@@ -9,6 +9,14 @@ console.log("Beginning Discord Plays: Minesweeper entry point...");
 const bot = require('./bot');
 bot.execute();
 
+function gracefullyExit() {
+  console.log("Gracefully shutting down");
+  bot.shutdown();
+
+  console.log("Entry point finished, goodbye!!");
+  process.exit();
+}
+
 // I guess stackoverflow is the best?
 // https://stackoverflow.com/a/14861513/10719432
 if (process.platform === "win32") {
@@ -24,9 +32,10 @@ if (process.platform === "win32") {
 
 process.on("SIGINT", function () {
   console.log("\nDetected SIGINT...");
-  console.log("Gracefully shutting down");
-  bot.shutdown();
+  gracefullyExit();
+});
 
-  console.log("Entry point finished, goodbye!!");
-  process.exit();
+process.on("SIGTERM", function () {
+  console.log("\nDetected SIGTERM...");
+  gracefullyExit();
 });
