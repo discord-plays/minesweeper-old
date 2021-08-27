@@ -1,0 +1,26 @@
+[
+  {
+    "text": "Pro Tip: Use `/start <width> <height> <mines>` to start a vanilla Minesweeper game!"
+  },
+  {
+    "text": "Pro Tip: Use `/forfeit` to end the current game!"
+  },
+  {
+    "text": "Board bugged out? Use '/kill' to remove it from the channel."
+  },
+  {
+    "text": "Want to see who made me? Try `/credits`!"
+  },
+  {
+    "text": "Want to use the bot in your own server? Try `/invite`."
+  },
+  {
+    "text": "Having a mine density of over 30% will cause you problems."
+  },
+  {
+    "text": "Try our hand-made missions by typing `/missions`."
+  },
+  {
+    "text": "Pro Tip: Zero mines are basically invisible unless you know how to find them!"
+  }
+]

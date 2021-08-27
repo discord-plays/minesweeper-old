@@ -1,5 +1,0 @@
-
-
-class InputMenu extends Menu {
-
-}

@@ -1,0 +1,84 @@
+<% let k=minesweeper.getModIds(); %>
+<% if(k.length < 1) { %>
+  <div>A massive bug destroyed the bot. Sorry!!</div>
+<% } else { %>
+  <div id="board-selector" class="selector-page">
+    <p>Board:</p>
+    <div class="w3-container">
+      <select id="MineBoards">
+        <option value="vanilla">Vanilla</option>
+        <% for(let i=0;i<k.length;i++) { %>
+          <% let mod = minesweeper.getMod(k[i]); %>
+          <% if(!customboarddata.hasOwnProperty(mod.id)) continue; %>
+          <% let k2 = customboarddata[mod.id]; %>
+          <% if(k2.length >= 1) { %>
+            <optgroup label="<%= mod.name %>">
+              <% for(let j=0;j<k2.length;j++) { %>
+                <option value="<%= k2[j].id %>"><%= k2[j].name %></option>
+              <% } %>
+            </optgroup>
+          <% } %>
+        <% } %>
+      </select>
+    </div>
+    <ul>
+      <li>Seed: <input class="board-num" num="seed" type="number"></li>
+      <li>Width: <input class="board-num" num="width" type="number"></li>
+      <li>Height: <input class="board-num" num="height" type="number"></li>
+    </ul>
+    <button class="selector-button w3-button w3-teal" to="info-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="mod-selector">Next</button>
+  </div>
+  <div id="mod-selector" class="selector-page">
+    <p>Mods:</p>
+    <p>
+      <% for(let i=0;i<k.length;i++) { %>
+        <% let mod=minesweeper.getMod(k[i]); %>
+          <div><label><input type="checkbox" class="MineModsCheckbox" data-mod="<%= mod.id.replace(/\./g,'_') %>">
+              <%= mod.name %>
+            </label></div>
+          <% } %>
+    </p>
+    <button class="selector-button w3-button w3-teal" to="board-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="option-selector">Next</button>
+  </div>
+  <div id="option-selector" class="selector-page">
+    <p>Options</p>
+    <% for(let i=0;i<k.length;i++) { %>
+      <% let mod = minesweeper.getMod(k[i]); %>
+      <% if(!minedata.hasOwnProperty(mod.id)) continue; %>
+      <div id="MineData-<%= mod.id.replace(/\./g,'_') %>-Section">
+        <% let k2 = minedata[mod.id]; %>
+        <% if(k2.length >= 1) { %>
+          <h5><%= mod.name %></h5>
+          <div class="w3-container">
+            <ul>
+              <% for(let j=0;j<k2.length;j++) { %>
+                <%- minedata[mod.id][j].getMineGeneratorEmbed(); %>
+              <% } %>
+            </ul>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+    <button class="selector-button w3-button w3-teal" to="mod-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="timer-selector">Next</button>
+  </div>
+  <div id="timer-selector" class="selector-page">
+    <p>Timer:</p>
+    <div class="w3-container">
+      <p>
+        <input id="MineTimerEnabled" type="checkbox" checked> Enabled?
+      </p>
+      <p id="MineTimerTime">
+        <input id="MineTimerHours" type="number"> : <input id="MineTimerMinutes" type="number"> : <input id="MineTimerSeconds" type="number">
+      </p>
+    </div>
+    <button class="selector-button w3-button w3-teal" to="option-selector">Previous</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="start-selector">Next</button>
+  </div>
+  <div id="start-selector" class="selector-page">
+    <button id="start-button" class="w3-button w3-green">Play</button>
+    <button id="reset-button" class="w3-button w3-red">Create a new board</button>
+  </div>
+<% } %>

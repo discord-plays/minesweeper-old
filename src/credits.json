@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Idea By:",
+    "value": "Kiki"
+  },
+  {
+    "name": "Developers:",
+    "value": "MrMelon54\nKiki",
+    "inline": true
+  },
+  {
+    "name": "Artists:",
+    "value": "Blananas2\nKevinGamer790",
+    "inline": true
+  },
+  {
+    "name": "Thanks to:",
+    "value": "All the bugtesters and people who helped in one way or another"
+  },
+  {
+    "name": "Github",
+    "value": "[github.com/discord-plays-minesweeper/bot](https://github.com/discord-plays-minesweeper/bot)"
+  }
+]
