@@ -26,7 +26,7 @@ function helpCommand(bot, guildId, replyFunc, cmd) {
   embed = new Discord.MessageEmbed()
     .setColor("#15d0ed")
     .setAuthor("Minesweeper!", bot.jsonfile.logoQuestion)
-    .setTitle(arr == null ? "General help" : "Help: " + command)
+    .setTitle(arr == null ? "General help" : "Help: " + cmd)
     .setDescription(arr == null ? generateGeneralHelpText(bot, guildId).join("\n") : arr.join('\n'));
   if (exArr.length != 0) embed.addField(`Example${exArr.length==1?"":"s"}`, exArr.join('\n'));
   replyFunc.reply({embeds:[embed], ephemeral:true});
