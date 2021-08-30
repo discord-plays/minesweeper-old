@@ -8,7 +8,6 @@ function helpCommand(bot, guildId, replyFunc, cmd) {
   var arr = null;
   var exArr = [];
   if (cmd != null) {
-    console.log(cmd);
     var commandScript = bot.findCommand(cmd);
     if (commandScript == null) throw new Error(`Error: Command \`${cmd}\` doesn't exist`);
     else if (commandScript.hasOwnProperty("help")) {
