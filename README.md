@@ -1,5 +1,7 @@
 # Discord Plays: Minesweeper
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W1607S8)
+
 Discord Plays: Minesweeper is a Discord bot started by @Kikithecat12345 and rewritten by @MrMelon54.
 
 To invite the bot just run `/invite` command in any server the bot is in. (Join the official Discord Plays Minesweeper Discord server if you aren't in any other servers with the bot.)
