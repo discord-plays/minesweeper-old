@@ -34,13 +34,16 @@
     <p>
       <% for(let i=0;i<k.length;i++) { %>
         <% let mod=minesweeper.getMod(k[i]); %>
-          <div><label><input type="checkbox" class="MineModsCheckbox" data-mod="<%= mod.id.replace(/\./g,'_') %>">
+          <div>
+            <label>
+              <input type="checkbox" class="MineModsCheckbox" data-mod="<%= mod.id.replace(/\./g,'_') %>">
               <%= mod.name %>
-            </label></div>
-          <% } %>
+            </label>
+          </div>
+      <% } %>
     </p>
     <button class="selector-button w3-button w3-teal" to="board-selector">Previous</button>
-    <button class="selector-button w3-button w3-teal w3-right" to="option-selector" required="mods-enabled">Next</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="option-selector" next-required="mods-selected">Next</button>
   </div>
   <div id="option-selector" class="selector-page">
     <p>Options</p>
@@ -62,7 +65,7 @@
       </div>
     <% } %>
     <button class="selector-button w3-button w3-teal" to="mod-selector">Previous</button>
-    <button class="selector-button w3-button w3-teal w3-right" to="timer-selector">Next</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="timer-selector" next-required="mines-selected">Next</button>
   </div>
   <div id="timer-selector" class="selector-page">
     <p>Timer:</p>
@@ -71,11 +74,11 @@
         <input id="MineTimerEnabled" type="checkbox" checked> Enabled?
       </p>
       <p id="MineTimerTime">
-        <input id="MineTimerHours" type="number"> : <input id="MineTimerMinutes" type="number"> : <input id="MineTimerSeconds" type="number">
+        <input id="MineTimerHours" type="number" value="0"> : <input id="MineTimerMinutes" type="number" value="0"> : <input id="MineTimerSeconds" type="number" value="0">
       </p>
     </div>
     <button class="selector-button w3-button w3-teal" to="option-selector">Previous</button>
-    <button class="selector-button w3-button w3-teal w3-right" to="start-selector">Next</button>
+    <button class="selector-button w3-button w3-teal w3-right" to="start-selector" next-required="timer-selected">Next</button>
   </div>
   <div id="start-selector" class="selector-page">
     <button id="start-button" class="w3-button w3-green">Play</button>

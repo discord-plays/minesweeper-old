@@ -1,12 +1,10 @@
 <html>
   <head>
     <% if(bot) { %>
-      <title>@<%= bot.tag %></title>
+    <title>@<%= bot.tag %></title>
     <% } else { %>
-      <title>Discord Plays Minesweeper</title>
-    <% } %>
-
-    <%- include('header') %>
+    <title>Discord Plays Minesweeper</title>
+    <% } %> <%- include('header') %>
 
     <script src="scripts/create.js"></script>
   </head>
@@ -15,31 +13,44 @@
     <div class="w3-container opc-center-container">
       <div class="w3-container w3-card-4 w3-padding-16 dpmMain">
         <% if(bot) { %>
-          <h1>@<%= bot.tag %></h1>
-          <% if(user) { %>
-            <p>You are logged in as: @<%= user.tag %></p>
-            <% if(user.channel) { %>
-              <% if(user.channel.guild) { %>
-                <p id="guild-info">Guild: <%= user.channel.guild.name %></p>
-                <p id="channel-info">Channel: #<%= user.channel.name %></p>
-              <% } else { %>
-                <p id="channel-info">Channel: Direct messages</p>
-              <% } %>
-              <div id="info-selector">
-                <p>To change channel run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
-                <button class="selector-button w3-button w3-teal w3-right" to="board-selector">Next</button>
-              </div>
-              <div><%- include('generator', {minesweeper,minedata,customboarddata}) %></div>
-            <% } else { %>
-              <p>Run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
-            <% } %>
-          <% } %>
+        <h1>@<%= bot.tag %></h1>
+        <% if(user) { %>
+        <p>You are logged in as: @<%= user.tag %></p>
+        <% if(user.channel) { %> <% if(user.channel.guild) { %>
+        <p id="guild-info">Guild: <%= user.channel.guild.name %></p>
+        <p id="channel-info">Channel: #<%= user.channel.name %></p>
         <% } else { %>
-          <h1>Discord Plays Minesweeper</h1>
-          <p>The bot has not started yet.</p>
+        <p id="channel-info">Channel: Direct messages</p>
+        <% } %>
+        <div id="info-selector">
+          <p>To change channel run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
+          <button class="selector-button w3-button w3-teal w3-right" to="board-selector">Next</button>
+        </div>
+        <div><%- include('generator', {minesweeper,minedata,customboarddata}) %></div>
+        <% } else { %>
+        <p>Run `/start` in a server (using the configured prefix or slash commands) or DMs and refresh for the channel to update here.</p>
+        <% } %> <% } %> <% } else { %>
+        <h1>Discord Plays Minesweeper</h1>
+        <p>The bot has not started yet.</p>
         <% } %>
       </div>
-      <div style="height:30px;"></div>
+      <div style="height: 30px"></div>
+    </div>
+
+    <div class="w3-modal" style="font-family: 'Roboto', sans-serif" id="dialog-error-message-wrapper">
+      <div class="w3-modal-content" style="background: #242424" id="dialog-error-message">
+        <header class="w3-container w3-text-white w3-teal">
+          <h2 data-type="title"></h2>
+        </header>
+
+        <div class="w3-container">
+          <p data-type="message"></p>
+        </div>
+
+        <footer class="w3-container">
+          <p><button class="w3-button w3-teal" onclick="errorDialogPressOK();">OK</button></p>
+        </footer>
+      </div>
     </div>
   </body>
 </html>
