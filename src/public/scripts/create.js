@@ -69,8 +69,12 @@ $(document).ready(function () {
 
   $(".selector-button").click(function() {
     updateDynamicContent();
-    $(this).parent().stop().slideUp();
-    $("#"+$(this).attr('to')).stop().slideDown();
+    let a = $(this).attr('required') == "mods-enabled";
+    let b = modCheckboxes.children().is(":checked");
+    if((a && b) || !a) {
+      $(this).parent().stop().slideUp();
+      $("#"+$(this).attr('to')).stop().slideDown();
+    }
   });
 
   $("#start-button").click(function() {

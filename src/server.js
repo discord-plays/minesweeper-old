@@ -111,6 +111,7 @@ app.post("/create", express.json(), (req, res, ...a)=>{
     let j = req.body;
     if(!j.hasOwnProperty("board")) return res.status(200).send(JSON.stringify({state:-1}));
     if(!j.hasOwnProperty("mines")) return res.status(200).send(JSON.stringify({state:-1}));
+    if(Object.keys(j.mines).length <= 0) return res.status(200).send(JSON.stringify({state:999,message:"No mines were selected"}));
 
     checkSession(req, res, mySession => {
       let userChannel = users.hasOwnProperty(mySession.user.id) ? users[mySession.user.id].channel : undefined;
