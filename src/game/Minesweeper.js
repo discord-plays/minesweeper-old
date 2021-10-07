@@ -162,9 +162,10 @@ class MinesweeperBot {
     if(isNaN(totalTime)) totalTime = 0;
 
     // Change seed for tournament or something?
-    let seed = (j.board.seed == null || j.board.seed == undefined) ? Math.floor(Math.random() * Math.pow(10,15)) : parseInt(j.board.seed);
+    let hasDefinedSeed = !(j.board.seed == null || j.board.seed == undefined);
+    let seed = hasDefinedSeed ? parseInt(j.board.seed) : Math.floor(Math.random() * Math.pow(10,15));
 
-    var board = this.createBoard(customBoardId, boardId, guildId, channelId, user.id, xSize, ySize, seed, "%%default%%", startTime, totalTime, missionName);
+    var board = this.createBoard(customBoardId, boardId, guildId, channelId, user.id, xSize, ySize, seed, hasDefinedSeed, "%%default%%", startTime, totalTime, missionName);
     board.generate(j.mines);
     board.fillNumbers();
     board.save();
@@ -214,7 +215,7 @@ class MinesweeperBot {
     return randomarrayitem(this.TIPS).text;
   }
 
-  createBoard(customBoardId, id, guildId, channelId, userId, width, height, seed, texturepack, startTime=null, totalTime=0, missionName=null) {
+  createBoard(customBoardId, id, guildId, channelId, userId, width, height, seed, hasDefinedSeed, texturepack, startTime=null, totalTime=0, missionName=null) {
     if (this.isBoard(id)) return false;
     console.log("Creating board with seed: "+seed);
 
@@ -232,7 +233,7 @@ class MinesweeperBot {
     }
 
     if(startTime === null) startTime = new Date();
-    this.__boards[id] = new customBoard(this, id, guildId, channelId, userId, width, height, seed, texturepack, startTime, totalTime, missionName);
+    this.__boards[id] = new customBoard(this, id, guildId, channelId, userId, width, height, seed, hasDefinedSeed, texturepack, startTime, totalTime, missionName);
     this.updateStatus();
     return this.__boards[id];
   }

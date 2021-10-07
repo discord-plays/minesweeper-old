@@ -10,7 +10,7 @@ class MinesweeperBoard {
   static id = "vanilla";
   static hideSizeOptions = false;
 
-  constructor(bot, boardId, guildId = null, channelId = null, userId = null, width, height, seed, texturepack, startTime, totalTime, missionName = null) {
+  constructor(bot, boardId, guildId = null, channelId = null, userId = null, width, height, seed, isCustomSeed, texturepack, startTime, totalTime, missionName = null) {
     this.customBoardId = MinesweeperBoard.id;
     this.running = false;
 
@@ -23,6 +23,7 @@ class MinesweeperBoard {
     } else {
       this.board = ndarray([], [width, height]);
       this.seed = seed;
+      this.isCustomSeed = isCustomSeed;
       this.r = new randomgen(seed);
       this.width = width;
       this.height = height;
@@ -66,7 +67,7 @@ class MinesweeperBoard {
     return {
       customBoardId: this.customBoardId || "vanilla",
       board: this.board.data,
-      seed: { base: this.seed, live: this.r.live },
+      seed: { base: this.seed, live: this.r.live, custom: this.isCustomSeed },
       width: this.width,
       height: this.height,
       id: this.id,
@@ -105,6 +106,7 @@ class MinesweeperBoard {
       [d.width, d.height]
     );
     this.seed = d.seed.base;
+    this.isCustomSeed = d.seed.custom;
     this.r = new randomgen(d.seed.base, d.seed.live);
     this.width = d.width;
     this.height = d.height;
@@ -581,7 +583,11 @@ class MinesweeperBoard {
   generateBoardEmbed() {
     var $t = this;
     let mineContent = $t.getMineEmbedContent();
-    let embed = new Discord.MessageEmbed().setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame).setTitle(`Standard (${$t.width}x${$t.height})`).setDescription($t.bot.generateTip()).addField("Seed:", `${$t.seed}`, true);
+    let embed = new Discord.MessageEmbed();
+    embed.setAuthor("Minesweeper!", $t.bot.jsonfile.logoGame);
+    embed.setTitle(`Standard (${$t.width}x${$t.height})`);
+    embed.setDescription($t.bot.generateTip());
+    embed.addField("Seed:", `${$t.seed}${$t.isCustomSeed ? " (seeded)": ""}`, true);
     if ($t.missionName != null && $t.missionName.trim() != "") embed.addField("Mission:", `${$t.missionName}`, true);
     embed.addField("Starting time:", $t.startTime.toString());
     if ($t.totalTime > 0) embed.addField("Time remaining:", `${$t.getTimeRemaining()}`);
