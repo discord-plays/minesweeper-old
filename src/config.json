@@ -1,6 +1,6 @@
 {
-  "logoGame": "https://software.onpointcoding.net/discord-plays-minesweeper/assets/minesweeper_logo.png",
-  "logoQuestion": "https://software.onpointcoding.net/discord-plays-minesweeper/assets/question_mark.png",
+  "logoGame": "https://minesweeper.discord-plays.xyz/images/logo.png",
+  "logoQuestion": "https://minesweeper.discord-plays.xyz/images/question_mark.png",
   "status": {
     "presence": "playing",
     "activity": "{{total-games}} {{label-games}} of minesweeper {{sad-emoji}}",
