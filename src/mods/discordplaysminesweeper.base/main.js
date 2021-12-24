@@ -1,9 +1,9 @@
-const Mod = require('../../game/Mod');
-const NumberAddMine = require('./NumberAddMine');
+const ModForMinesweeeper = require("../../game/ModForMinesweeper");
+const NumberAddMine = require("./NumberAddMine");
 
-class Base extends Mod {
+class Base extends ModForMinesweeeper {
   constructor(ms) {
-    super("discordplaysminesweeper.base","Base",ms);
+    super("discordplaysminesweeper.base", "Base", ms);
     this.mines.add(new NumberAddMine("Single", 1));
     this.mines.add(new NumberAddMine("Double", 2));
     this.mines.add(new NumberAddMine("Triple", 3));

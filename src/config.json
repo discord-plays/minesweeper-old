@@ -1,4 +1,5 @@
 {
+  "projectName": "Discord Plays Minesweeper",
   "logoGame": "https://minesweeper.discord-plays.xyz/images/logo.png",
   "logoQuestion": "https://minesweeper.discord-plays.xyz/images/question_mark.png",
   "status": {
@@ -7,6 +8,10 @@
     "reloading": "reloading previous Minesweeper games"
   },
   "timerCheckInterval": 5000,
-  "github": "https://github.com/discord-plays-minesweeper/bot",
-  "ownerId": "222344019458392065"
+  "github": "https://github.com/discord-plays/minesweeper",
+  "ownerId": "222344019458392065",
+  "defaultGuildSettings": {
+    "prefix": "dpm!"
+  },
+  "failedErrorMessage": "bomb exploded"
 }

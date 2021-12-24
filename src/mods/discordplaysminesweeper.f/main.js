@@ -1,9 +1,9 @@
-const Mod = require('../../game/Mod');
-const FBoard = require('./FBoard');
+const ModForMinesweeper = require("../../game/ModForMinesweeper");
+const FBoard = require("./FBoard");
 
-class Base extends Mod {
+class Base extends ModForMinesweeper {
   constructor(ms) {
-    super("discordplaysminesweeper.f","F",ms);
+    super("discordplaysminesweeper.f", "F", ms);
     this.boards.add(FBoard);
   }
 }

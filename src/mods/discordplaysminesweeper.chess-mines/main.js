@@ -1,14 +1,14 @@
-const Mod = require('../../game/Mod');
-const PawnMine = require('./PawnMine');
-const KnightMine = require('./KnightMine');
-const BishopMine = require('./BishopMine');
-const RookMine = require('./RookMine');
-const QueenMine = require('./QueenMine');
-const KingMine = require('./KingMine');
+const ModForMinesweeper = require("../../game/ModForMinesweeper");
+const PawnMine = require("./PawnMine");
+const KnightMine = require("./KnightMine");
+const BishopMine = require("./BishopMine");
+const RookMine = require("./RookMine");
+const QueenMine = require("./QueenMine");
+const KingMine = require("./KingMine");
 
-class Base extends Mod {
+class Base extends ModForMinesweeper {
   constructor(ms) {
-    super("discordplaysminesweeper.chess-mines","Chess Mines",ms);
+    super("discordplaysminesweeper.chess-mines", "Chess Mines", ms);
     this.mines.add(new PawnMine());
     this.mines.add(new KnightMine());
     this.mines.add(new BishopMine());
