@@ -22,7 +22,7 @@
     "body": "^5.1.0",
     "cookie-parser": "^1.4.5",
     "discord-oauth2-api": "^1.0.8",
-    "discord-plays-base": "github:discord-plays/base",
+    "discord-plays-base": "git://github.com/discord-plays/base#1eef625f17f234c1fa7d47dd8f428203f569e963",
     "discord.js": "^13.0.1",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.6",

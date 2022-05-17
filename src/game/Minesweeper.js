@@ -1,14 +1,14 @@
-const { BotProject } = require("discord-plays-base/src/game");
+const BotProject = require("discord-plays-base/src/game/BotProject");
+const Assets = require("discord-plays-base/src/game/Assets");
+const CommandsList = require("discord-plays-base/src/game/CommandsList");
+const MissionsList = require("discord-plays-base/src/game/MissionsList");
+const ModLoader = require("discord-plays-base/src/game/ModLoader");
 const path = require("path");
 const fs = require("fs");
 const glob = require("glob");
 const Discord = require("discord.js");
-const Assets = require("./Assets");
-const CommandsList = require("./CommandsList");
-const MissionsList = require("./MissionsList");
 const Board = require("./Board");
 const MenuController = require("../ui/Controller");
-const ModLoader = require("./ModLoader");
 const randomarrayitem = require("../utils/randomarrayitem");
 const DEBUG_LOGGING = require("../debug_logging");
 const LoadedMinesweeperTexturepack = require("./LoadedMinesweeperTexturepack");
@@ -20,10 +20,6 @@ class MinesweeperBot extends BotProject {
     this.__customboards = {};
     this.__mines = {};
     this.__flags = {};
-  }
-
-  loaded_mods() {
-    console.log("Finished loading mods...");
   }
 
   getMines() {

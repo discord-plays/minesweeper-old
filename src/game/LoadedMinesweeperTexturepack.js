@@ -1,7 +1,7 @@
 const Jimp = require("jimp");
 const path = require("path");
 const xor = require("../utils/xor");
-const { LoadedTexturepack } = require("discord-plays-base/src/game");
+const LoadedTexturepack = require("discord-plays-base/src/game/LoadedTexturepack");
 
 class LoadedMinesweeperTexturepack extends LoadedTexturepack {
   constructor(basedir, texturepath) {
