@@ -22,7 +22,7 @@
     "body": "^5.1.0",
     "cookie-parser": "^1.4.5",
     "discord-oauth2-api": "^1.0.8",
-    "discord-plays-base": "git://github.com/discord-plays/base#1eef625f17f234c1fa7d47dd8f428203f569e963",
+    "discord-plays-base": "https://github.com/discord-plays/base#7730a5593e5942c17c863b1dc3fb14c42fce89a7",
     "discord.js": "^13.0.1",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.6",
@@ -36,6 +36,7 @@
     "replace-color": "^2.3.0",
     "set": "^1.1.1",
     "uuid": "^8.3.2",
-    "ws": "^7.4.6"
+    "ws": "^7.4.6",
+    "xml2js": "0.6.0"
   }
 }
