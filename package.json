@@ -25,7 +25,7 @@
     "discord-plays-base": "https://github.com/discord-plays/base#7730a5593e5942c17c863b1dc3fb14c42fce89a7",
     "discord.js": "^13.0.1",
     "dotenv": "^8.2.0",
-    "ejs": "^3.1.6",
+    "ejs": "^3.1.10",
     "express": "^4.19.2",
     "glob": "^7.1.6",
     "jimp": "^0.16.1",
