@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/discord-plays-minesweeper/bot#readme",
   "dependencies": {
+    "@jimp/custom": "^0.22.12",
     "@jimp/jpeg": "^0.16.1",
     "aggregation": "^1.2.6",
     "body": "^5.1.0",
@@ -28,7 +29,7 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "glob": "^7.1.6",
-    "jimp": "^0.16.1",
+    "jimp": "^0.22.12",
     "jpeg-js": "^0.4.4",
     "marked": "^4.0.10",
     "ndarray": "^1.0.19",
